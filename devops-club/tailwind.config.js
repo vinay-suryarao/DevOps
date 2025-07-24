@@ -12,6 +12,15 @@ export default {
         accent: '#FF6B3E',
         light: '#D9D9D9',
       },
+      animation: {
+        marquee: 'marquee 50s linear infinite',
+      },
+      keyframes: {
+        marquee: {
+          '0%': { transform: 'translateX(100%)' },
+          '100%': { transform: 'translateX(-100%)' },
+        },
+      },
     },
   },
   plugins: [],
