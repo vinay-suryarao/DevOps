@@ -140,10 +140,10 @@ const App = () => {
 
   // --- CONTACT DETAILS (Unchanged) ---
   const contactDetails = {
-    email: 'suryaraovinay@email.com',
-    whatsapp: '9373168180',
-    instagram: 'YOUR_HANDLE',
-    address: 'Thane, Godbundar road, Kasarwadavli'
+    email: 'devopsclub@apsit.edu.in',
+    whatsapp: '7972867869',
+    instagram: 'devopsclub_apsit',
+    address: 'APSIT Campus, Kasarvadavali, Thane, Maharashtra'
   };
 
   // --- HANDLERS (Unchanged) ---

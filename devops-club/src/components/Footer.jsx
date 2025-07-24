@@ -61,14 +61,14 @@ export default function Footer() {
             </li>
             <li className="flex items-center">
               <FaEnvelope className="text-orange-400 mr-3" />
-              <a href="mailto:devops@apsit.edu.in" className="hover:text-white transition">
-                devops@apsit.edu.in
+              <a href="mailto:devopsclub@apsit.edu.in" className="hover:text-white transition">
+                devopsclub@apsit.edu.in
               </a>
             </li>
             <li className="flex items-center">
               <FaPhoneAlt className="text-orange-400 mr-3" />
-              <a href="tel:+911234567890" className="hover:text-white transition">
-                +91 12345 67890
+              <a href="tel:+917972867869" className="hover:text-white transition">
+                +91 7972867869
               </a>
             </li>
           </ul>
