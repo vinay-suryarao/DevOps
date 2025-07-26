@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { FaGithub, FaLinkedin, FaMapMarkerAlt, FaEnvelope, FaPhoneAlt } from "react-icons/fa";
 import { FiChevronRight } from "react-icons/fi";
 import logo1 from "../assets/logo1.png";
-import logo2 from "../assets/logo2.png";
+
 
 export default function Footer() {
   return (
@@ -11,9 +11,8 @@ export default function Footer() {
         {/* Logo and About */}
         <div className="space-y-4">
           <div className="flex items-center gap-4">
-            <img src={logo1} alt="DevOps Logo" className="h-10" />
-            <div className="h-10 w-px bg-gray-400" />
-            <img src={logo2} alt="Secondary Logo" className="h-10" />
+            <img src={logo1} alt="DevOps Logo" className="h-20 w=auto" />
+            
           </div>
           <h2 className="text-xl font-semibold">APSIT DevOps Space</h2>
           <p className="text-sm text-gray-300">
