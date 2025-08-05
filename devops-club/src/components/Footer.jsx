@@ -14,7 +14,7 @@ export default function Footer() {
             <img src={logo1} alt="DevOps Logo" className="h-20 w=auto" />
             
           </div>
-          <h2 className="text-xl font-semibold">APSIT DevOps Space</h2>
+          <h2 className="text-xl font-semibold">APSIT DevOps Club</h2>
           <p className="text-sm text-gray-300">
             Where innovation meets automation. Join the DevOps Club — code, deploy, and succeed together!
           </p>
