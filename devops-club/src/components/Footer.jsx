@@ -1,7 +1,7 @@
 import { Link } from "react-router-dom";
 import { FaGithub, FaLinkedin, FaMapMarkerAlt, FaEnvelope, FaPhoneAlt } from "react-icons/fa";
 import { FiChevronRight } from "react-icons/fi";
-import logo1 from "../assets/logo1.png";
+import logo from "../assets/logo.png";
 
 
 export default function Footer() {
@@ -11,7 +11,7 @@ export default function Footer() {
         {/* Logo and About */}
         <div className="space-y-4">
           <div className="flex items-center gap-4">
-            <img src={logo1} alt="DevOps Logo" className="h-20 w=auto" />
+            <img src={logo} alt="DevOps Logo" className="h-20 w=auto" />
             
           </div>
           <h2 className="text-xl font-semibold">APSIT DevOps Club</h2>
@@ -19,10 +19,10 @@ export default function Footer() {
             Where innovation meets automation. Join the DevOps Club — code, deploy, and succeed together!
           </p>
           <div className="flex gap-4 text-xl text-white">
-            <a href="https://github.com/your-github-link" target="_blank" rel="noopener noreferrer">
+            <a href="https://github.com/orgs/Devops-Club-APSIT" target="_blank" rel="noopener noreferrer">
               <FaGithub className="hover:text-orange-400 transition" />
             </a>
-            <a href="https://linkedin.com/in/your-linkedin-link" target="_blank" rel="noopener noreferrer">
+            <a href="https://www.linkedin.com/in/devopsclub-apsit-3aa23528a/" target="_blank" rel="noopener noreferrer">
               <FaLinkedin className="hover:text-orange-400 transition" />
             </a>
           </div>
@@ -37,8 +37,8 @@ export default function Footer() {
               { name: "About", path: "/about" },
               { name: "Events", path: "/events" },
               { name: "Connect", path: "/connect" },
-              { name: "Newsletters", path: "/newsletters" },
-              { name: "Feedback", path: "/feedback" }
+              { name: "Bulletins", path: "/newsletters" },
+              { name: "Hackathons", path: "/hackathons" }
             ].map((item, index) => (
               <li key={index}>
                 <Link to={item.path} className="flex items-center hover:text-orange-400 transition">
@@ -76,7 +76,10 @@ export default function Footer() {
 
       {/* Copyright */}
       <div className="mt-12 border-t border-gray-600 pt-6 text-sm text-center text-gray-400">
-        © {new Date().getFullYear()} APSIT DevOps Club. All rights reserved.
+        © {new Date().getFullYear()} APSIT DevOps Club. All rights reserved. |
+        <Link to="/credits" className="ml-2 underline hover:text-orange-400 transition">
+            Website Credits
+        </Link>
       </div>
     </footer>
   );

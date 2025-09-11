@@ -4,7 +4,10 @@ import About from "../pages/About";
 import Events from "../pages/Events";
 import Connect from "../pages/Connect";
 import Newsletters from "../pages/Newsletters";
-import Feedback from "../pages/Feedback";
+import Credits from '../pages/Credits';
+import Hackathons from "../pages/Hackathons";
+import Admin from "../pages/Admin";
+
 
 export default function AppRoutes() {
   return (
@@ -14,7 +17,9 @@ export default function AppRoutes() {
       <Route path="/events" element={<Events />} />
       <Route path="/connect" element={<Connect />} />
       <Route path="/newsletters" element={<Newsletters />} />
-      <Route path="/feedback" element={<Feedback />} />
+      <Route path="/credits" element={<Credits />} />
+      <Route path="/hackathons" element={<Hackathons />} />
+      <Route path="/admin" element={<Admin />} />
     </Routes>
   );
 }
