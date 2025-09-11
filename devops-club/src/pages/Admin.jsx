@@ -2,7 +2,7 @@
 import React, { useState, useEffect } from 'react';
 import { onAuthStateChanged, signInWithEmailAndPassword, signOut, sendPasswordResetEmail } from "firebase/auth";
 import { collection, addDoc, updateDoc, deleteDoc, doc, serverTimestamp, query, orderBy, onSnapshot } from "firebase/firestore";
-import { auth, db } from '../FirebaseConfig'; // Aapke central config se import
+import { auth, db } from './firebaseConfig.js'; // Aapke central config se import
 // NEW: ToggleLeft aur ToggleRight icons add kiye hain
 import { LogIn, LogOut, PlusCircle, Loader, User, Lock, Trash2, Pencil, XCircle, Mail, ArrowLeft, ToggleLeft, ToggleRight } from 'lucide-react';
 
