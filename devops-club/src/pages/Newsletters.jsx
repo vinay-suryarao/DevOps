@@ -1,6 +1,6 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
+import { db } from './firebaseConfig.js';
 import { FileText, Loader, Search } from 'lucide-react';
 
 // Background component
