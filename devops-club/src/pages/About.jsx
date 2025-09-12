@@ -1,6 +1,6 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { Binoculars, Rocket, ChevronLeft, ChevronRight, HeartHandshake } from 'lucide-react';
-import PresidentShreyash from '../assets/pr.png';
+import PresidentShreyash from '../assets/president_shreyash.png';
 import TechnicalVinay from '../assets/Technical_Vinay.png';
 import DesignAkshata from '../assets/Design_Akshata.png';
 import DesignIshita from '../assets/Design_Ishita.png';
