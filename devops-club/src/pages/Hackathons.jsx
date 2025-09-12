@@ -1,6 +1,6 @@
 import React, { useState, useEffect } from 'react';
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import { db } from '../FirebaseConfig'; // Aapke central config se import
+import { db } from '../firebaseConfig'; // Aapke central config se import
 
 // ### CHANGE HERE: API URL ab .env file se aa raha hai ###
 const googleScriptUrl = import.meta.env.VITE_HACKATHON_REGISTRATION_SCRIPT_URL;
