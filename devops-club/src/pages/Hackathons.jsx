@@ -130,7 +130,7 @@ const RegistrationModal = ({ hackathon, onClose }) => {
             <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md relative">
                 <button onClick={onClose} disabled={regStatus.submitting} className="absolute top-3 right-5 text-gray-400 hover:text-gray-700 text-3xl disabled:cursor-not-allowed">&times;</button>
                 <h2 className="text-2xl font-bold mb-2">Register for {hackathon.name}</h2>
-                <p className="mb-6 text-gray-500">Apni spot secure karne ke liye form bharein.</p>
+                <p className="mb-6 text-gray-500">Register to secure your spot</p>
                 
                 {regStatus.message ? (
                   <div className={`p-3 my-4 rounded-md text-center ${regStatus.message.includes('successful') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
