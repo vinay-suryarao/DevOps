@@ -316,7 +316,7 @@ const InternCard = ({ name, photoUrl }) => (
 // An infinitely scrolling marquee of intern cards.
 const InternsMarquee = () => {
     const studentData = [
-        { name: 'Tanvi Pawar', photoUrl: TanviPawar },
+        { name: 'Tanvi Pawar', photoUrl: AnubhavSingh },
         { name: 'Anubhav Singh', photoUrl: AnubhavSingh },
         { name: 'Omkar Chadgaonkar', photoUrl: OmkarChadgaonkar },
         { name: 'Anjali Singh', photoUrl: AnjaliSingh },
