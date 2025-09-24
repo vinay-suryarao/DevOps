@@ -27,7 +27,16 @@ import KinjalParadkar from '../assets/Kinjal_Paradkar.png';
 import AnanyaMishra from '../assets/Ananya_Mishra.png';
 import AryanPardeshi from '../assets/Aryan_Pardeshi.png';
 import RajMehta from '../assets/Raj_Mehta.png';
-
+import Technicalcohead_Ismaeel from '../assets/Technicalcohead_Ismaeel.png';
+import Technicalcohead_Chitresh from '../assets/Technicalcohead_Chitresh.png';
+import Designcohead_Madhura from '../assets/Designcohead_Madhura.png';
+import Designcohead_Siddharth from '../assets/Designcohead_Siddharth.png';
+import Literaturecohead_Kanksha from '../assets/Literaturecohead_Kanksha.png'; 
+import Literaturecohead_Raj from '../assets/Literaturecohead_Raj.png';
+import Cinematographycohead_Aarya from '../assets/Cinematographycohead_Aarya.png';
+import Cinematographycohead_Parth from '../assets/Cinematographycohead_Parth.png'; 
+import Publicitycohead_Tanushree from '../assets/Publicitycohead_Tanushree.png';
+import Publicitycohead_Shivansh from '../assets/Publicitycohead_Shivansh.png';
 
 
 // Defines custom CSS animations used throughout the component.
@@ -363,12 +372,25 @@ const About = () => {
     ];
 
     const headsData = [
-        { name: 'Vinay Suryarao', designation: 'Technial Team', photoUrl: TechnicalVinay},
+        { name: 'Vinay Suryarao', designation: 'Technical Team', photoUrl: TechnicalVinay},
         { name: 'Ishita Singh', designation: 'Design Team', photoUrl: DesignIshita},
         { name: 'Varunkumar Lysetti', designation: 'Literature Team', photoUrl: LiteratureVarunkumar },
         { name: 'Nupur Sugadare', designation: 'Publicity Team', photoUrl: PublicityNupur },
         { name: 'Sayyeda Rumiza', designation: 'Photography Team', photoUrl: PhotographyRumiza },
         { name: 'Saloni Shirasat', designation: 'Cinematography Team', photoUrl: CinematographySonali },
+    ];
+    
+    const coHeadsData = [
+        { name: 'Ismaeel Shaikh', designation: 'Technical Co-Head', photoUrl: Technicalcohead_Ismaeel },
+        { name: 'Siddharth Kumar', designation: 'Design Co-Head', photoUrl: Designcohead_Siddharth },
+        { name: 'Raj Puranik', designation: 'Literature Co-Head', photoUrl: Literaturecohead_Raj },
+        { name: 'Aarya Nichal', designation: 'Cinematography Co-Head', photoUrl: Cinematographycohead_Aarya },
+        { name: 'Tanushree Gabhane', designation: 'Publicity Co-Head', photoUrl: Publicitycohead_Tanushree },
+        { name: 'Chitresh Poojary', designation: 'Technical Co-Head', photoUrl: Technicalcohead_Chitresh },
+        { name: 'Madhura Zambare', designation: 'Design Co-Head', photoUrl: Designcohead_Madhura },
+        { name: 'Kanksha Vanjare', designation: 'Literature Co-Head', photoUrl: Literaturecohead_Kanksha },
+        { name: 'Parth Joshi', designation: 'Cinematography Co-Head', photoUrl: Cinematographycohead_Parth },
+        { name: 'Shivansh Shukla', designation: 'Publicity Co-Head', photoUrl: Publicitycohead_Shivansh },
     ];
 
  return (
@@ -429,7 +451,7 @@ const About = () => {
                 <h3 className="text-2xl font-bold text-orange-500 mb-8 animate-fade-in-up" style={{animationDelay: '1.5s'}}>
                     Heads
                 </h3>
-                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 max-w-7xl mx-auto">
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 max-w-7xl mx-auto mb-16">
                     {headsData.map((member, index) => (
                         <TeamCard 
                             key={index}
@@ -440,11 +462,26 @@ const About = () => {
                         />
                     ))}
                 </div>
+                
+                <h3 className="text-2xl font-bold text-orange-500 mb-8 animate-fade-in-up" style={{animationDelay: '2.2s'}}>
+                    Co-heads
+                </h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-5 gap-8 max-w-7xl mx-auto">
+                    {coHeadsData.map((member, index) => (
+                        <TeamCard 
+                            key={index}
+                            name={member.name}
+                            designation={member.designation}
+                            photoUrl={member.photoUrl}
+                            animationDelay={`${2.3 + index * 0.1}s`}
+                        />
+                    ))}
+                </div>
             </div>
         </div>
 
         <div className="relative z-10 w-full text-center px-4 sm:px-6 lg:px-8">
-             <h2 className="text-4xl md:text-5xl font-extrabold text-[#2a3f54] drop-shadow-lg mb-8 animate-fade-in-up" style={{animationDelay: '2.2s'}}>
+             <h2 className="text-4xl md:text-5xl font-extrabold text-[#2a3f54] drop-shadow-lg mb-8 animate-fade-in-up" style={{animationDelay: '3.3s'}}>
                 Internship Opportunities
             </h2>
             <div className="relative">
@@ -453,7 +490,7 @@ const About = () => {
         </div>
 
         <div className="relative z-10 w-full text-center bg-slate-100/80 backdrop-blur-sm py-16">
-            <h2 className="text-4xl md:text-5xl font-extrabold text-[#2a3f54] drop-shadow-lg mb-8 animate-fade-in-up" style={{animationDelay: '2.4s'}}>
+            <h2 className="text-4xl md:text-5xl font-extrabold text-[#2a3f54] drop-shadow-lg mb-8 animate-fade-in-up" style={{animationDelay: '3.5s'}}>
                 Meet Our Interns
             </h2>
             <InternsMarquee />

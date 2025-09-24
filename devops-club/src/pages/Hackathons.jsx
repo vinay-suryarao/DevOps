@@ -1,5 +1,5 @@
 import React, { useState, useEffect } from 'react';
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
+import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
 import { db } from '../firebaseConfig';
 
 const googleScriptUrl = import.meta.env.VITE_HACKATHON_REGISTRATION_SCRIPT_URL;
@@ -14,7 +14,8 @@ export default function Hackathons() {
     const fetchHackathons = async () => {
       setLoading(true);
       try {
-        const q = query(collection(db, 'hackathons'), orderBy('createdAt', 'desc'));
+        // Query to fetch only enabled hackathons
+        const q = query(collection(db, 'hackathons'), where("isEnabled", "==", true), orderBy('createdAt', 'desc'));
         const querySnapshot = await getDocs(q);
         setHackathons(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
       } catch (error) {
@@ -50,17 +51,16 @@ export default function Hackathons() {
                   <p className="text-sm text-slate-500">
                     <strong>Date:</strong> {new Date(hackathon.date).toLocaleDateString("en-US", { year: 'numeric', month: 'long', day: 'numeric' })}
                   </p>
+                   {/* Display Team Size */}
+                  <p className="text-sm text-slate-500 mt-2">
+                    <strong>Team Size:</strong> {hackathon.teamSize || 'N/A'} Members
+                  </p>
                 </div>
                 <div className="p-6 bg-slate-50 rounded-b-xl">
-                  {hackathon.isEnabled === true ? (
-                    <button onClick={() => handleApplyClick(hackathon)} className="w-full bg-orange-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition-all duration-300 shadow-md hover:shadow-lg">
-                      Apply Now
-                    </button>
-                  ) : (
-                    <button disabled className="w-full bg-slate-400 text-white font-bold py-3 px-4 rounded-lg cursor-not-allowed">
-                      Registrations Closed
-                    </button>
-                  )}
+                  {/* The button is already correctly checking isEnabled */}
+                  <button onClick={() => handleApplyClick(hackathon)} className="w-full bg-orange-500 text-white font-bold py-3 px-4 rounded-lg hover:bg-orange-600 transition-all duration-300 shadow-md hover:shadow-lg">
+                    Apply Now
+                  </button>
                 </div>
               </div>
             ))}
@@ -77,32 +77,44 @@ export default function Hackathons() {
 
 // --- UPDATED Registration Modal Component ---
 const RegistrationModal = ({ hackathon, onClose }) => {
-  const [regFormData, setRegFormData] = useState({ name: '', college: '', email: '', contactNumber: '' });
+  const teamSize = hackathon.teamSize || 4; // Default to 4 if not set
+  
+  // Create an initial state with an array of empty member objects
+  const createInitialState = () => Array.from({ length: teamSize }, () => ({ name: '', college: '', email: '', contactNumber: '' }));
+
+  const [members, setMembers] = useState(createInitialState());
   const [regStatus, setRegStatus] = useState({ submitting: false, message: '' });
 
-  const handleRegFormChange = (e) => setRegFormData(prev => ({ ...prev, [e.target.name]: e.target.value }));
+  const handleMemberChange = (index, e) => {
+    const updatedMembers = [...members];
+    updatedMembers[index][e.target.name] = e.target.value;
+    setMembers(updatedMembers);
+  };
 
   const handleRegSubmit = async (e) => {
     e.preventDefault();
     setRegStatus({ submitting: true, message: 'Checking your registration status...' });
 
+    // Get all emails from the form, filter out empty ones
+    const allEmails = members.map(m => m.email.trim()).filter(email => email !== '');
+    if (allEmails.length === 0) {
+        setRegStatus({ submitting: false, message: 'Please enter at least one email.' });
+        return;
+    }
+
     // --- NEW VALIDATION LOGIC ---
-    // STEP 1: Check if the user is already registered before submitting.
     try {
-      // We send the email and hackathon name to our script's doGet function
-      const checkUrl = `${googleScriptUrl}?email=${encodeURIComponent(regFormData.email)}&hackathonName=${encodeURIComponent(hackathon.name)}`;
+      const checkUrl = `${googleScriptUrl}?emails=${encodeURIComponent(allEmails.join(','))}&hackathonName=${encodeURIComponent(hackathon.name)}`;
       
       const checkResponse = await fetch(checkUrl);
       const checkResult = await checkResponse.json();
 
       if (checkResult.result === 'success' && checkResult.isRegistered) {
-        // If the script finds a match, show an error and stop.
-        setRegStatus({ submitting: false, message: 'This email is already registered for this hackathon.' });
-        return; // Stop the submission process
+        setRegStatus({ submitting: false, message: `An email you entered is already registered for this hackathon.` });
+        return; 
       }
       
       if (checkResult.result !== 'success') {
-        // Handle any errors from the verification script
         throw new Error(checkResult.message || "Could not verify registration status.");
       }
 
@@ -111,13 +123,23 @@ const RegistrationModal = ({ hackathon, onClose }) => {
       return;
     }
 
-    // STEP 2: If not registered, proceed with the submission.
+    // --- NEW SUBMISSION LOGIC ---
     setRegStatus({ submitting: true, message: 'Registering...' });
-    const dataToSubmit = { ...regFormData, hackathonName: hackathon.name };
+    
+    // Flatten the members array into a single object for the Google Script
+    const dataToSubmit = { hackathonName: hackathon.name };
+    members.forEach((member, index) => {
+        const prefix = index === 0 ? 'Leader' : `Member${index + 1}`;
+        dataToSubmit[`${prefix}Name`] = member.name;
+        dataToSubmit[`${prefix}College`] = member.college;
+        dataToSubmit[`${prefix}Email`] = member.email;
+        dataToSubmit[`${prefix}ContactNumber`] = member.contactNumber;
+    });
+
     try {
       const response = await fetch(googleScriptUrl, {
         method: 'POST',
-        redirect: 'follow', // Use redirect to simplify CORS handling for POST
+        redirect: 'follow',
         body: JSON.stringify(dataToSubmit),
         headers: { 'Content-Type': 'text/plain;charset=utf-8' },
       });
@@ -136,10 +158,10 @@ const RegistrationModal = ({ hackathon, onClose }) => {
 
   return (
     <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
-      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-md relative">
+      <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-lg relative max-h-[90vh] overflow-y-auto">
         <button onClick={onClose} disabled={regStatus.submitting} className="absolute top-3 right-5 text-gray-400 hover:text-gray-700 text-3xl disabled:cursor-not-allowed">&times;</button>
         <h2 className="text-2xl font-bold mb-2">Register for {hackathon.name}</h2>
-        <p className="mb-6 text-gray-500">Fill out the form to secure your spot.</p>
+        <p className="mb-6 text-gray-500">Please fill in details for all {teamSize} members.</p>
         
         {regStatus.message && (
           <div className={`p-3 my-4 rounded-md text-center ${regStatus.message.includes('successful') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
@@ -147,13 +169,19 @@ const RegistrationModal = ({ hackathon, onClose }) => {
           </div>
         )}
         
-        {/* Hide form after successful registration */}
         {!regStatus.message.includes('successful') && (
-          <form onSubmit={handleRegSubmit} className="space-y-4">
-            <input type="text" name="name" placeholder="Full Name" value={regFormData.name} onChange={handleRegFormChange} className="w-full p-3 border border-slate-300 rounded-lg" required />
-            <input type="text" name="college" placeholder="College Name" value={regFormData.college} onChange={handleRegFormChange} className="w-full p-3 border border-slate-300 rounded-lg" required />
-            <input type="email" name="email" placeholder="Email ID" value={regFormData.email} onChange={handleRegFormChange} className="w-full p-3 border border-slate-300 rounded-lg" required />
-            <input type="tel" name="contactNumber" placeholder="Contact Number" value={regFormData.contactNumber} onChange={handleRegFormChange} className="w-full p-3 border border-slate-300 rounded-lg" required />
+          <form onSubmit={handleRegSubmit} className="space-y-6">
+            {members.map((member, index) => (
+              <div key={index} className="p-4 border border-slate-200 rounded-lg">
+                <h3 className="font-bold text-lg mb-3 text-slate-700">{index === 0 ? 'Team Leader' : `Member ${index + 1}`}</h3>
+                <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                  <input type="text" name="name" placeholder="Full Name" value={member.name} onChange={(e) => handleMemberChange(index, e)} className="w-full p-3 border border-slate-300 rounded-lg" required />
+                  <input type="text" name="college" placeholder="College Name" value={member.college} onChange={(e) => handleMemberChange(index, e)} className="w-full p-3 border border-slate-300 rounded-lg" required />
+                  <input type="email" name="email" placeholder="Email ID" value={member.email} onChange={(e) => handleMemberChange(index, e)} className="w-full p-3 border border-slate-300 rounded-lg" required />
+                  <input type="tel" name="contactNumber" placeholder="Contact Number" value={member.contactNumber} onChange={(e) => handleMemberChange(index, e)} className="w-full p-3 border border-slate-300 rounded-lg" required />
+                </div>
+              </div>
+            ))}
             <button type="submit" disabled={regStatus.submitting} className="w-full bg-blue-600 text-white py-3 rounded-lg font-semibold disabled:bg-gray-400 hover:bg-blue-700 transition-colors">
               {regStatus.submitting ? 'Please wait...' : 'Submit Registration'}
             </button>
