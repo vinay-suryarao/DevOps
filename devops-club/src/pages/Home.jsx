@@ -13,17 +13,15 @@ import {
   FaLinkedin,
 } from "react-icons/fa";
 import { Typewriter } from "react-simple-typewriter";
-import bgVideo from "../assets/video.mp4";
 import { motion } from "framer-motion";
-// Swiper CSS imports removed
 import sonalImg from "../assets/sonal.png";
 import vishalImg from "../assets/vishal.png";
 import sujataImg from "../assets/sujata.jpg";
-import SonalVideo from "../assets/Sonal_Jain.mp4";
-import SujataVideo from "../assets/Sujata_Mam.mp4";
-import VishalVideo from "../assets/Vishal_Sir.mp4";
 
-// Aapki Red Hat event images (ab sabhi .jpg format mein)
+// ## VIDEO IMPORTS REMOVED ##
+// The local .mp4 files are no longer imported.
+
+// Red Hat event images
 import redhat1 from "../assets/redhat1.jpg";
 import redhat2 from "../assets/redhat2.jpg";
 import redhat3 from "../assets/redhat3.jpg";
@@ -37,24 +35,14 @@ import redhat10 from "../assets/redhat10.jpg";
 import redhat11 from "../assets/redhat11.jpg";
 import redhat12 from "../assets/redhat12.jpg";
 
-// Naye logo imports
-import redHatLogoHat from "../assets/redhat.png"; // Hat wala logo
-import redHatAcademyLogo from "../assets/redhat-academy-logo.jpg"; // Academy logo
+// Logo imports
+import redHatLogoHat from "../assets/redhat.png";
+import redHatAcademyLogo from "../assets/redhat-academy-logo.jpg";
 
 const redhatEventImages = [
-    redHatAcademyLogo, // Sabse pehle Red Hat Academy ka logo
-    redhat1,
-    redhat2,
-    redhat3,
-    redhat4,
-    redhat5,
-    redhat6,
-    redhat7,
-    redhat8,
-    redhat9,
-    redhat10,
-    redhat11,
-    redhat12,
+    redHatAcademyLogo,
+    redhat1, redhat2, redhat3, redhat4, redhat5, redhat6,
+    redhat7, redhat8, redhat9, redhat10, redhat11, redhat12,
 ];
 
 const NetworkBackground = () => {
@@ -69,11 +57,11 @@ const NetworkBackground = () => {
 
         const setCanvasDimensions = () => {
             const dpr = window.devicePixelRatio || 1;
-            const rect = canvas.getBoundingClientRect();
+            const rect = document.body.getBoundingClientRect(); // Use body for full page height
             if (rect.width > 0 && rect.height > 0) {
-              canvas.width = rect.width * dpr;
-              canvas.height = rect.height * dpr;
-              ctx.scale(dpr, dpr);
+                canvas.width = rect.width * dpr;
+                canvas.height = rect.height * dpr;
+                ctx.scale(dpr, dpr);
             }
         };
         
@@ -147,19 +135,17 @@ const NetworkBackground = () => {
             
             ctx.save();
             ctx.translate(driftX, driftY);
-
             particlesArray.forEach(p => p.update());
             connect();
-
             ctx.restore();
             
             animationFrameId = window.requestAnimationFrame(animate);
         }
         
         const timeoutId = setTimeout(() => {
-          setCanvasDimensions();
-          init();
-          animate(0);
+            setCanvasDimensions();
+            init();
+            animate(0);
         }, 100);
         
         const handleResize = () => { 
@@ -168,12 +154,15 @@ const NetworkBackground = () => {
             init();
             animate(0);
         };
+        const resizeObserver = new ResizeObserver(handleResize);
+        resizeObserver.observe(document.body);
         window.addEventListener('resize', handleResize);
 
         return () => {
             clearTimeout(timeoutId);
             window.cancelAnimationFrame(animationFrameId);
             window.removeEventListener('resize', handleResize);
+            resizeObserver.disconnect();
         };
     }, []);
 
@@ -212,33 +201,31 @@ const coordinators = [
     role: "Assistant Professor at APSIT",
     image: sujataImg,
     skills: [
-      "Git & GitHub",
-      "Software Engineering",
-      "Software Development",
-      "CI/CD",
-      "Kubernetes",
+      "Git & GitHub", "Software Engineering", "Software Development",
+      "CI/CD", "Kubernetes",
     ],
     linkedinUrl: "https://www.linkedin.com/in/sujata-oak-a887601a9/",
   },
 ];
 
+// ## CLOUDINARY URLS ADDED ##
 const events = [
   {
-    videoSrc: SonalVideo,
+    videoSrc: "https://res.cloudinary.com/dfzlwhsia/video/upload/v1758978245/Sonal_Jain_2_ccod7q.mp4",
     title: "What is DevOps ?",
     description:
       "DevOps is a combination of development and operations practices that aims to shorten the software development lifecycle and deliver high-quality software faster. It emphasizes automation, collaboration, and continuous integration and delivery (CI/CD) to ensure efficient, reliable, and scalable software deployment.",
     position: "left",
   },
   {
-    videoSrc: SujataVideo,
+    videoSrc: "https://res.cloudinary.com/dfzlwhsia/video/upload/v1758978729/Sujata_Mam_2_mrj6gv.mp4",
     title: "Basics of DevOps",
     description:
       "At its core, DevOps represents a modern approach to software delivery that integrates people, processes, and tools. It focuses on continuous improvement, automation of repetitive tasks, and bridging the gap between development and operations teams to enhance productivity and efficiency.",
     position: "right",
   },
   {
-    videoSrc: VishalVideo,
+    videoSrc: "https://res.cloudinary.com/dfzlwhsia/video/upload/v1758978962/Vishal_Sir_nhdnqj.mp4",
     title: "Why to choose DevOps ?",
     description:
       "Adopting DevOps empowers organizations to accelerate software delivery, improve collaboration, and achieve higher reliability. It ensures faster releases, reduced errors, and greater customer satisfaction by automating processes and promoting a culture of shared responsibility.",
@@ -296,9 +283,7 @@ const CoordinatorCard = ({ coordinator }) => (
                 className="w-full h-full rounded-full object-cover"
               />
             </div>
-            <h3 className="text-2xl font-bold text-white">
-              {coordinator.name}
-            </h3>
+            <h3 className="text-2xl font-bold text-white">{coordinator.name}</h3>
             <p className="text-sky-300">{coordinator.role}</p>
           </div>
         </div>
@@ -396,17 +381,14 @@ const Home = () => {
     setCurrentImageIndex(newIndex);
   };
 
-  // Automatic slider logic
   useEffect(() => {
     const timer = setInterval(() => {
       setCurrentImageIndex(prevIndex =>
         prevIndex === redhatEventImages.length - 1 ? 0 : prevIndex + 1
       );
-    }, 2000); // Image changes every 2 seconds
-
-    // Cleanup the interval on component unmount
+    }, 2000); 
     return () => clearInterval(timer);
-  }, []); // Empty dependency array means this effect runs only once after the component mounts
+  }, []); 
 
   return (
     <div className="relative font-sans">
@@ -419,7 +401,8 @@ const Home = () => {
           loop
           muted
           className="absolute top-0 left-0 w-full h-full object-cover z-0"
-          src={bgVideo}
+          // ## CLOUDINARY URL ADDED ##
+          src={"https://res.cloudinary.com/dfzlwhsia/video/upload/v1758979456/video_xrjzqm.mp4"}
         />
         <div className="absolute top-0 left-0 w-full h-full bg-black/60 z-10" />
         <motion.div
@@ -468,15 +451,13 @@ const Home = () => {
             whileInView="show"
             viewport={{ once: true, amount: 0.2 }}
             variants={fadeInUp}
-            // *** YEH CLASS THEEK KAR DI GAYI HAI ***
             className="bg-white/40 backdrop-blur-md rounded-3xl p-8 border border-slate-300 shadow-2xl transition-shadow duration-300 ease-in-out hover:shadow-[0_0_15px_rgba(249,115,22,0.6),_0_0_30px_rgba(249,115,22,0.4),_inset_0_0_10px_rgba(249,115,22,0.3)]"
           >
-            {/* Title aur Hat Logo */}
             <div className="flex justify-center items-center gap-x-4 mb-8">
-                <h2 className="text-4xl font-extrabold text-center text-slate-800 drop-shadow-[0_2px_2px_rgba(0,0,0,0.1)]">
-                    Our Collaboration with Red Hat Academy
-                </h2>
-                <img src={redHatLogoHat} alt="Red Hat Logo" className="h-12 w-auto" />
+              <h2 className="text-4xl font-extrabold text-center text-slate-800 drop-shadow-[0_2px_2px_rgba(0,0,0,0.1)]">
+                Our Collaboration with Red Hat Academy
+              </h2>
+              <img src={redHatLogoHat} alt="Red Hat Logo" className="h-12 w-auto" />
             </div>
 
             <div className="flex flex-col lg:flex-row items-center gap-8">
@@ -487,65 +468,32 @@ const Home = () => {
                     alt={`Red Hat Event Slide ${currentImageIndex + 1}`}
                     className="object-cover aspect-video w-full"
                   />
-
                   <button
                     onClick={goToPreviousImage}
                     className="absolute top-1/2 left-3 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full hover:bg-black/60 transition-colors focus:outline-none focus:ring-2 focus:ring-white"
                     aria-label="Previous Image"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M15 19l-7-7 7-7"
-                      />
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
                     </svg>
                   </button>
-
                   <button
                     onClick={goToNextImage}
                     className="absolute top-1/2 right-3 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full hover:bg-black/60 transition-colors focus:outline-none focus:ring-2 focus:ring-white"
                     aria-label="Next Image"
                   >
-                    <svg
-                      xmlns="http://www.w3.org/2000/svg"
-                      className="h-6 w-6"
-                      fill="none"
-                      viewBox="0 0 24 24"
-                      stroke="currentColor"
-                    >
-                      <path
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth={2}
-                        d="M9 5l7 7-7 7"
-                      />
+                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
                     </svg>
                   </button>
                 </div>
               </div>
-
               <div className="w-full lg:w-1/2">
                 <p className="text-slate-700 text-lg leading-relaxed mb-4">
-                  <b>Red Hat</b> is the world's leading provider of enterprise
-                  open-source solutions, delivering high-performing Linux, cloud,
-                  container, and Kubernetes technologies. Their tools, like
-                  Ansible and OpenShift, are fundamental to modern DevOps
-                  practices.
+                  <b>Red Hat</b> is the world's leading provider of enterprise open-source solutions, delivering high-performing Linux, cloud, container, and Kubernetes technologies. Their tools, like Ansible and OpenShift, are fundamental to modern DevOps practices.
                 </p>
                 <p className="text-slate-700 text-lg leading-relaxed">
-                  Through our collaboration, the <b>APSIT DevOps Club</b> provides students
-                  with an immersive experience, offering hands-on workshops and
-                  industry-relevant skills in enterprise Linux,
-                  containerization, and automation, guided by Red Hat certified
-                  professionals.
+                  Through our collaboration, the <b>APSIT DevOps Club</b> provides students with an immersive experience, offering hands-on workshops and industry-relevant skills in enterprise Linux, containerization, and automation, guided by Red Hat certified professionals.
                 </p>
               </div>
             </div>
@@ -558,19 +506,13 @@ const Home = () => {
         <div className="container mx-auto px-6">
           <div className="text-center">
             <motion.h2
-              variants={fadeInUp}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, amount: 0.5 }}
+              variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.5 }}
               className="text-4xl font-extrabold text-slate-800 mb-12"
             >
               FACULTY COORDINATORS
             </motion.h2>
             <motion.div
-              variants={staggerContainer}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, amount: 0.2 }}
+              variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}
               className="flex flex-wrap justify-center gap-16"
             >
               {coordinators.map((coord, index) => (
@@ -588,10 +530,7 @@ const Home = () => {
         <div className="container mx-auto px-6">
           <div className="text-center">
             <motion.h2
-              variants={fadeInUp}
-              initial="hidden"
-              whileInView="show"
-              viewport={{ once: true, amount: 0.5 }}
+              variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.5 }}
               className="text-4xl font-extrabold text-slate-800 mb-12"
             >
               Discover DevOps
