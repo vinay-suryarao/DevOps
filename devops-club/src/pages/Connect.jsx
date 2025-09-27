@@ -18,13 +18,15 @@ const AnimatedBackground = () => {
 
   useEffect(() => {
     const canvas = canvasRef.current;
+    if (!canvas) return;
     const ctx = canvas.getContext('2d');
     let animationFrameId;
     let particlesArray;
 
     const setCanvasDimensions = () => {
       canvas.width = window.innerWidth;
-      canvas.height = window.innerHeight;
+      // Set height to the full scrollable height of the document
+      canvas.height = document.body.scrollHeight;
     };
     setCanvasDimensions();
 
@@ -62,8 +64,8 @@ const AnimatedBackground = () => {
       const colors = ['#1e293b', '#f97316']; // Dark Slate and Orange
       for (let i = 0; i < numberOfParticles; i++) {
         let size = (Math.random() * 2) + 1;
-        let x = (Math.random() * ((window.innerWidth - size * 2) - (size * 2)) + size * 2);
-        let y = (Math.random() * ((window.innerHeight - size * 2) - (size * 2)) + size * 2);
+        let x = (Math.random() * ((canvas.width - size * 2) - (size * 2)) + size * 2);
+        let y = (Math.random() * ((canvas.height - size * 2) - (size * 2)) + size * 2);
         let directionX = (Math.random() * 0.4) - 0.2;
         let directionY = (Math.random() * 0.4) - 0.2;
         let color = colors[Math.floor(Math.random() * colors.length)];
@@ -100,7 +102,7 @@ const AnimatedBackground = () => {
     }
 
     function animate() {
-      ctx.clearRect(0, 0, window.innerWidth, window.innerHeight);
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
       for (let i = 0; i < particlesArray.length; i++) {
         particlesArray[i].update();
       }
@@ -115,11 +117,16 @@ const AnimatedBackground = () => {
       setCanvasDimensions();
       init();
     };
+    
+    // Use ResizeObserver to detect body height changes
+    const resizeObserver = new ResizeObserver(handleResize);
+    resizeObserver.observe(document.body);
     window.addEventListener('resize', handleResize);
 
     return () => {
       window.cancelAnimationFrame(animationFrameId);
       window.removeEventListener('resize', handleResize);
+      resizeObserver.disconnect();
     };
   }, []);
 
@@ -246,7 +253,6 @@ const Connect = () => {
   const [errors, setErrors] = useState({});
   const [submissionStatus, setSubmissionStatus] = useState(null);
 
-  // ### CHANGE HERE: API URL ab .env file se aa raha hai ###
   const SCRIPT_URL = import.meta.env.VITE_CONNECT_FORM_SCRIPT_URL;
 
   const contactDetails = {
@@ -254,7 +260,7 @@ const Connect = () => {
     whatsapp: 'https://chat.whatsapp.com/KuhAdgzCJn9EOxNmuBofne?mode=r_t',
     instagram: 'devopsclub_apsit',
     address: 'Thane, Ghodbunder Road, Kasarvadavali',
-    mapsLink: 'https://www.google.com/maps/search/?api=1&query=A.P.+Shah+Institute+of+Technology'
+    mapsLink: 'https://maps.app.goo.gl/your-college-location' // Example link
   };
 
   const validate = () => {
@@ -275,7 +281,7 @@ const Connect = () => {
     const { name, value } = e.target;
     setFormData((prev) => ({ ...prev, [name]: value }));
     if (errors[name]) {
-      validate();
+      setErrors((prev) => ({ ...prev, [name]: '' }));
     }
   };
 
@@ -284,24 +290,28 @@ const Connect = () => {
     if (!validate()) return;
 
     setSubmissionStatus('submitting');
+    const data = new FormData();
+    Object.keys(formData).forEach(key => data.append(key, formData[key]));
+    
     fetch(SCRIPT_URL, {
       method: 'POST',
-      mode: 'cors',
-      headers: { 'Content-Type': 'text/plain;charset=utf-8' },
-      body: JSON.stringify(formData)
+      body: data
     })
-      .then((res) => res.json())
-      .then((data) => {
-        if (data.result === 'success') {
-          setSubmissionStatus('success');
-          setFormData({ firstName: '', lastName: '', email: '', message: '' });
-          setTimeout(() => setSubmissionStatus(null), 5000);
-        } else {
-          setSubmissionStatus('error');
+      .then(res => {
+        // Google Script with CORS workaround might return an opaque redirect
+        if (res.ok || res.type === 'opaque') {
+            return { result: 'success' };
         }
+        throw new Error('Network response was not ok.');
+      })
+      .then(() => {
+        setSubmissionStatus('success');
+        setFormData({ firstName: '', lastName: '', email: '', message: '' });
+        setTimeout(() => setSubmissionStatus(null), 5000);
       })
       .catch(() => {
         setSubmissionStatus('error');
+        setTimeout(() => setSubmissionStatus(null), 5000);
       });
   };
 
@@ -309,24 +319,11 @@ const Connect = () => {
     <div className="relative font-sans min-h-screen overflow-x-hidden">
       <AnimatedBackground />
 
-      <div className="relative h-[60vh] md:h-[80vh] flex items-center justify-start text-left overflow-hidden">
-        <motion.div
-          className="absolute inset-0 w-full h-full"
-          initial={{ scale: 1.2 }}
-          animate={{ scale: 1 }}
-          transition={{ duration: 1.5, ease: "easeOut" }}
-        >
-          <img
-            src="https://t4.ftcdn.net/jpg/02/69/27/55/360_F_269275503_fL3Dx8hgvCDgrnuvbm8XLPHJ461QIM4o.jpg"
-            alt="DevOps Club members collaborating in a modern workspace"
-            className="w-full h-full object-cover"
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-[#113F67]/80 via-[#113F67]/50 to-transparent"></div>
-        </motion.div>
-
+      {/* ### START OF HERO SECTION CHANGES ### */}
+      <div className="relative h-[50vh] flex items-center justify-center text-center">
         <div className="relative px-6 max-w-4xl">
           <motion.h1
-            className="text-4xl md:text-7xl font-extrabold text-white tracking-tight drop-shadow-lg"
+            className="text-5xl md:text-6xl font-extrabold text-[#113F67] tracking-tight drop-shadow-lg"
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
@@ -334,7 +331,7 @@ const Connect = () => {
             Connect With Us
           </motion.h1>
           <motion.p
-            className="mt-4 text-lg md:text-xl text-slate-200 drop-shadow-md"
+            className="mt-4 text-lg md:text-xl text-slate-600 drop-shadow-md"
             initial={{ opacity: 0, y: 50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.5 }}
@@ -343,6 +340,7 @@ const Connect = () => {
           </motion.p>
         </div>
       </div>
+      {/* ### END OF HERO SECTION CHANGES ### */}
 
       <main className="relative max-w-7xl mx-auto py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
@@ -410,11 +408,12 @@ const Connect = () => {
                   {errors.message && <p className="text-xs text-red-600 mt-1">{errors.message}</p>}
                 </div>
 
+                {/* ### START OF BUTTON CHANGES ### */}
                 <motion.button
                   type="submit"
                   disabled={submissionStatus === 'submitting'}
-                  className="w-full flex justify-center items-center gap-3 py-4 rounded-xl text-white font-semibold bg-[#113F67] shadow-lg disabled:opacity-70 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-[#113F67]/40"
-                  whileHover={{ scale: 1.05, boxShadow: "0px 10px 20px rgba(17, 63, 103, 0.4)" }}
+                  className="w-full flex justify-center items-center gap-3 py-3 rounded-xl text-[#113F67] font-semibold border-2 border-[#113F67] transition-colors duration-300 hover:bg-[#113F67]/10 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-[#113F67]/40"
+                  whileHover={{ scale: 1.05 }}
                   whileTap={{ scale: 0.98 }}
                 >
                   <AnimatePresence mode="wait">
@@ -428,6 +427,7 @@ const Connect = () => {
                     {submissionStatus === 'submitting' ? 'Sending...' : 'Send Message'}
                   </span>
                 </motion.button>
+                {/* ### END OF BUTTON CHANGES ### */}
 
                 <AnimatePresence>
                   {submissionStatus === 'success' && (

@@ -1,4 +1,5 @@
-import { Link } from "react-router-dom";
+// 1. 'Link' ko 'NavLink' se replace kiya gaya hai
+import { NavLink } from "react-router-dom";
 import logo from "../assets/logo.png";
 import { ShieldCheck } from 'lucide-react';
 
@@ -30,50 +31,94 @@ export default function Navbar() {
 
         <div className="flex items-center gap-8">
           <nav className="flex items-center gap-6 font-semibold text-primary">
-            <Link
+            
+            {/* 2. Har NavLink mein className ko function banaya gaya hai */}
+            <NavLink
               to="/"
-              className="hover:text-orange-400 transition-colors duration-300"
+              className={({ isActive }) =>
+                `transition-colors duration-300 ${
+                  isActive
+                    ? "text-orange-500 underline underline-offset-4"
+                    : "hover:text-orange-400"
+                }`
+              }
             >
               Home
-            </Link>
-            <Link
+            </NavLink>
+            <NavLink
               to="/about"
-              className="hover:text-orange-400 transition-colors duration-300"
+              className={({ isActive }) =>
+                `transition-colors duration-300 ${
+                  isActive
+                    ? "text-orange-500 underline underline-offset-4"
+                    : "hover:text-orange-400"
+                }`
+              }
             >
               About
-            </Link>
-            <Link
+            </NavLink>
+            <NavLink
               to="/events"
-              className="hover:text-orange-400 transition-colors duration-300"
+              className={({ isActive }) =>
+                `transition-colors duration-300 ${
+                  isActive
+                    ? "text-orange-500 underline underline-offset-4"
+                    : "hover:text-orange-400"
+                }`
+              }
             >
               Events
-            </Link>
-            <Link
+            </NavLink>
+            <NavLink
               to="/connect"
-              className="hover:text-orange-400 transition-colors duration-300"
+              className={({ isActive }) =>
+                `transition-colors duration-300 ${
+                  isActive
+                    ? "text-orange-500 underline underline-offset-4"
+                    : "hover:text-orange-400"
+                }`
+              }
             >
               Connect
-            </Link>
-            <Link
+            </NavLink>
+            <NavLink
               to="/newsletters"
-              className="hover:text-orange-400 transition-colors duration-300"
+              className={({ isActive }) =>
+                `transition-colors duration-300 ${
+                  isActive
+                    ? "text-orange-500 underline underline-offset-4"
+                    : "hover:text-orange-400"
+                }`
+              }
             >
               Bulletins
-            </Link>
-      
-            <Link
+            </NavLink>
+        
+            <NavLink
               to="/hackathons"
-              className="hover:text-orange-400 transition-colors duration-300"
+              className={({ isActive }) =>
+                `transition-colors duration-300 ${
+                  isActive
+                    ? "text-orange-500 underline underline-offset-4"
+                    : "hover:text-orange-400"
+                }`
+              }
             >
               Hackathons
-            </Link>
-            <Link
+            </NavLink>
+            <NavLink
               to="/admin"
-              className="bg-orange-600 text-white px-4 py-2 rounded-lg hover:bg-orange-700 transition-colors duration-300 flex items-center gap-2 text-sm"
+              className={({ isActive }) =>
+                `text-white px-4 py-2 rounded-lg transition-colors duration-300 flex items-center gap-2 text-sm ${
+                  isActive
+                    ? "bg-orange-700 ring-2 ring-orange-400"
+                    : "bg-orange-600 hover:bg-orange-700"
+                }`
+              }
             >
               <ShieldCheck size={18} />
               <span>Admin</span>
-            </Link>
+            </NavLink>
           </nav>
         </div>
       </div>
