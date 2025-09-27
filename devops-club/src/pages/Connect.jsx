@@ -260,7 +260,7 @@ const Connect = () => {
     whatsapp: 'https://chat.whatsapp.com/KuhAdgzCJn9EOxNmuBofne?mode=r_t',
     instagram: 'devopsclub_apsit',
     address: 'Thane, Ghodbunder Road, Kasarvadavali',
-    mapsLink: 'https://maps.app.goo.gl/your-college-location' // Example link
+    mapsLink: 'http://googleusercontent.com/maps.google.com/3' // Example link
   };
 
   const validate = () => {
@@ -298,7 +298,6 @@ const Connect = () => {
       body: data
     })
       .then(res => {
-        // Google Script with CORS workaround might return an opaque redirect
         if (res.ok || res.type === 'opaque') {
             return { result: 'success' };
         }
@@ -320,7 +319,8 @@ const Connect = () => {
       <AnimatedBackground />
 
       {/* ### START OF HERO SECTION CHANGES ### */}
-      <div className="relative h-[50vh] flex items-center justify-center text-center">
+      {/* h-[50vh] ko hata kar py-* (padding) use kiya hai */}
+      <div className="relative flex items-center justify-center text-center py-24 sm:py-32">
         <div className="relative px-6 max-w-4xl">
           <motion.h1
             className="text-5xl md:text-6xl font-extrabold text-[#113F67] tracking-tight drop-shadow-lg"
@@ -342,7 +342,9 @@ const Connect = () => {
       </div>
       {/* ### END OF HERO SECTION CHANGES ### */}
 
-      <main className="relative max-w-7xl mx-auto py-16 sm:py-24 px-4 sm:px-6 lg:px-8">
+      {/* ### START OF MAIN SECTION CHANGES ### */}
+      {/* py-* (padding top/bottom) ko pb-* (padding bottom only) kiya hai */}
+      <main className="relative max-w-7xl mx-auto pb-16 sm:pb-24 px-4 sm:px-6 lg:px-8">
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
 
           {/* Left Column: Contact Information */}
@@ -407,8 +409,7 @@ const Connect = () => {
                   ></textarea>
                   {errors.message && <p className="text-xs text-red-600 mt-1">{errors.message}</p>}
                 </div>
-
-                {/* ### START OF BUTTON CHANGES ### */}
+                
                 <motion.button
                   type="submit"
                   disabled={submissionStatus === 'submitting'}
@@ -427,7 +428,6 @@ const Connect = () => {
                     {submissionStatus === 'submitting' ? 'Sending...' : 'Send Message'}
                   </span>
                 </motion.button>
-                {/* ### END OF BUTTON CHANGES ### */}
 
                 <AnimatePresence>
                   {submissionStatus === 'success' && (
@@ -448,6 +448,7 @@ const Connect = () => {
           </AnimatedSection>
         </div>
       </main>
+      {/* ### END OF MAIN SECTION CHANGES ### */}
     </div>
   );
 };
