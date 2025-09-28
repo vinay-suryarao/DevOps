@@ -4,11 +4,11 @@ import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mail,
   Instagram,
-  MapPin,
   Send,
   Loader,
   CheckCircle,
   AlertTriangle,
+  Linkedin, // Replaced MapPin with Linkedin
 } from 'lucide-react';
 import { FaWhatsapp } from 'react-icons/fa';
 
@@ -259,8 +259,8 @@ const Connect = () => {
     email: 'devopsclub@apsit.edu.in',
     whatsapp: 'https://chat.whatsapp.com/KuhAdgzCJn9EOxNmuBofne?mode=r_t',
     instagram: 'devopsclub_apsit',
-    address: 'Thane, Ghodbunder Road, Kasarvadavali',
-    mapsLink: 'http://googleusercontent.com/maps.google.com/3'
+    linkedinHandle: 'devopsclub-apsit',
+    linkedinUrl: 'https://www.linkedin.com/in/devopsclub-apsit'
   };
 
   const validate = () => {
@@ -340,11 +340,9 @@ const Connect = () => {
       </div>
 
       <main className="relative max-w-7xl mx-auto pb-16 sm:pb-24 px-4 sm:px-6 lg:px-8">
-        {/* MODIFICATION: Removed `items-start` to allow grid items to stretch to equal height */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
           <AnimatedSection>
-            {/* --- Container added behind "Get In Touch" cards --- */}
             <div className="bg-slate-500 p-8 sm:p-10 rounded-3xl shadow-xl h-full">
               <h2 className="text-3xl font-extrabold text-orange-400 mb-8">Get In Touch</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -372,10 +370,10 @@ const Connect = () => {
                   delay={0.3}
                 />
                 <ContactCard
-                  icon={<MapPin className="w-7 h-7 text-slate-500 group-hover:text-white transition-colors" />}
-                  title="Our Location"
-                  text={contactDetails.address}
-                  href={contactDetails.mapsLink}
+                  icon={<Linkedin className="w-7 h-7 text-blue-600 group-hover:text-white transition-colors" />}
+                  title="LinkedIn"
+                  text={`@${contactDetails.linkedinHandle}`}
+                  href={contactDetails.linkedinUrl}
                   isExternal={true}
                   delay={0.4}
                 />
@@ -384,7 +382,6 @@ const Connect = () => {
           </AnimatedSection>
 
           <AnimatedSection delay={0.2}>
-            {/* --- Contact Form reverted to Light Theme --- */}
             <div className="bg-slate-500 p-8 sm:p-10 rounded-3xl shadow-xl border border-slate-200">
               <h2 className="text-3xl font-extrabold text-orange-400 mb-2">Send a Message</h2>
               <p className="text-slate-300 mb-10 text-lg">Have a specific question? Fill out the form below.</p>
