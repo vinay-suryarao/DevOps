@@ -31,15 +31,13 @@ import Technicalcohead_Ismaeel from '../assets/Technicalcohead_Ismaeel.png';
 import Technicalcohead_Chitresh from '../assets/Technicalcohead_Chitresh.png';
 import Designcohead_Madhura from '../assets/Designcohead_Madhura.png';
 import Designcohead_Siddharth from '../assets/Designcohead_Siddharth.png';
-import Literaturecohead_Kanksha from '../assets/Literaturecohead_Kanksha.png'; 
+import Literaturecohead_Kanksha from '../assets/Literaturecohead_Kanksha.png';
 import Literaturecohead_Raj from '../assets/Literaturecohead_Raj.png';
 import Cinematographycohead_Aarya from '../assets/Cinematographycohead_Aarya.png';
-import Cinematographycohead_Parth from '../assets/Cinematographycohead_Parth.png'; 
+import Cinematographycohead_Parth from '../assets/Cinematographycohead_Parth.png';
 import Publicitycohead_Tanushree from '../assets/Publicitycohead_Tanushree.png';
 import Publicitycohead_Shivansh from '../assets/Publicitycohead_Shivansh.png';
 
-
-// Defines custom CSS animations used throughout the component.
 const CustomStyles = () => (
   <style>{`
     @keyframes fade-in-up {
@@ -57,24 +55,25 @@ const CustomStyles = () => (
   `}</style>
 );
 
-// Renders the animated, drifting particle network in the background.
-const NetworkBackground = () => {
+const NetworkBackground = ({ containerRef }) => {
     const canvasRef = useRef(null);
 
     useEffect(() => {
         const canvas = canvasRef.current;
-        if (!canvas) return;
+        if (!canvas || !containerRef.current) return;
         const ctx = canvas.getContext('2d');
         let animationFrameId;
         let particlesArray;
 
         const setCanvasDimensions = () => {
+            if (!containerRef.current) return;
             const dpr = window.devicePixelRatio || 1;
-            const bodyHeight = document.body.scrollHeight;
+            const containerHeight = containerRef.current.scrollHeight;
+            
             canvas.style.width = '100%';
-            canvas.style.height = `${bodyHeight}px`;
+            canvas.style.height = `${containerHeight}px`;
             canvas.width = canvas.offsetWidth * dpr;
-            canvas.height = bodyHeight * dpr;
+            canvas.height = containerHeight * dpr;
             ctx.scale(dpr, dpr);
         };
         
@@ -163,7 +162,10 @@ const NetworkBackground = () => {
         };
 
         const resizeObserver = new ResizeObserver(handleResize);
-        resizeObserver.observe(document.body);
+        if (containerRef.current) {
+          resizeObserver.observe(containerRef.current);
+        }
+
         window.addEventListener('resize', handleResize);
 
         return () => {
@@ -171,183 +173,180 @@ const NetworkBackground = () => {
             window.removeEventListener('resize', handleResize);
             resizeObserver.disconnect();
         };
-    }, []);
+      }, [containerRef]);
 
     return <canvas ref={canvasRef} className="absolute inset-0 z-0 w-full h-full bg-slate-100" style={{ display: 'block' }} />;
 };
 
-
-// A reusable card for displaying information like Vision, Mission, and Values.
 const InfoCard = ({ icon, title, description, animationDelay }) => (
-    <div 
-        className="bg-[#2a3f54] backdrop-blur-md border border-gray-200/50 rounded-2xl shadow-xl p-8 flex flex-col items-center text-center transition-transform duration-300 hover:shadow-orange-400/20 animate-fade-in-up  hover:-translate-y-4"
-        style={{ animationDelay }}
-    >
-        <div className="text-orange-400 mb-6">{icon}</div>
-        <h3 className="text-xl font-bold text-white tracking-[0.2em] uppercase mb-4">{title}</h3>
-        <p className="text-gray-300 leading-relaxed">{description}</p>
-    </div>
+  <div
+    className="bg-[#2a3f54] backdrop-blur-md border border-gray-200/50 rounded-2xl shadow-xl p-8 flex flex-col items-center text-center transition-transform duration-300 hover:shadow-orange-400/20 animate-fade-in-up  hover:-translate-y-4"
+    style={{ animationDelay }}
+  >
+    <div className="text-orange-400 mb-6">{icon}</div>
+    <h3 className="text-xl font-bold text-white tracking-[0.2em] uppercase mb-4">{title}</h3>
+    <p className="text-gray-300 leading-relaxed">{description}</p>
+  </div>
 );
 
-// ## MODIFIED COMPONENT: Shows a slider of DevOps tools with descriptions and new layout ##
 const ToolsSlider = () => {
-    const [currentIndex, setCurrentIndex] = useState(0);
-    const timeoutRef = useRef(null);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const timeoutRef = useRef(null);
+  const devopsTools = [
+      { name: 'Linux', logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg', description: 'Linux is the backbone of modern DevOps, providing the stability and flexibility required to host cloud-native applications. Our club focuses on mastering the command line, shell scripting, and system administration, giving members the foundational skills to manage any server environment.' },
+      { name: 'Git & GitHub', logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg', description: 'Version control is non-negotiable in software development. We dive deep into Git for tracking code changes and GitHub for hosting repositories and fostering teamwork. Members learn branching, pull requests, and resolving merge conflicts, ensuring they can contribute to any project with confidence.' },
+      { name: 'Docker', logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg', description: "Docker revolutionized how we build and ship software by containerizing applications, ensuring consistency from a developer's laptop to production. We teach how to write Dockerfiles, manage images, and use Docker Compose for multi-container applications, a crucial skill for microservices." },
+      { name: 'Kubernetes', logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kubernetes/kubernetes-plain.svg', description: 'When containers run at scale, Kubernetes is the industry-standard for orchestration. It automates the deployment, scaling, and management of applications. Our workshops cover key concepts like Pods, Services, and Deployments, empowering members to manage complex, resilient systems with ease.' },
+      { name: 'Jenkins', logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/jenkins/jenkins-original.svg', description: 'Automation is at the heart of DevOps, and Jenkins is a leading server for building CI/CD pipelines. We guide members through creating automated workflows that build, test, and deploy code. This hands-on experience reduces manual errors and accelerates the software delivery lifecycle.' },
+      { name: 'Ansible', logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ansible/ansible-original.svg', description: 'Configuration management ensures that infrastructure is consistent and reliable. Ansible is a powerful, agentless tool for automating this process using simple YAML syntax. We explore how to write playbooks to configure servers, deploy applications, and orchestrate complex IT tasks.' },
+  ];
 
-    const devopsTools = [
-        { name: 'Linux', logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/linux/linux-original.svg', description: 'The open-source kernel powering most cloud servers and infrastructures.' },
-        { name: 'Git', logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/git/git-original.svg', description: 'A distributed version control system for tracking changes in source code.' },
-        { name: 'GitHub', logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/github/github-original.svg', description: 'A platform for hosting and collaborating on Git repositories.' },
-        { name: 'Docker', logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/docker/docker-original.svg', description: 'A platform to develop, ship, and run applications in lightweight containers.' },
-        { name: 'Jenkins', logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/jenkins/jenkins-original.svg', description: 'An open-source automation server for building, testing, and deploying code (CI/CD).' },
-        { name: 'Kubernetes', logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/kubernetes/kubernetes-plain.svg', description: 'An open-source container orchestration platform for automating application deployment.' },
-        { name: 'Ansible', logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/ansible/ansible-original.svg', description: 'An agentless automation tool for configuration management and application deployment.' },
-        { name: 'Terraform', logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/terraform/terraform-original.svg', description: 'An infrastructure as code (IaC) tool to build and manage cloud resources safely.' },
-        { name: 'Azure', logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/azure/azure-original.svg', description: 'Microsoft\'s cloud computing platform offering a wide range of services.' },
-        { name: 'Prometheus', logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/prometheus/prometheus-original.svg', description: 'An open-source monitoring and alerting toolkit for modern systems.' },
-        { name: 'Grafana', logoUrl: 'https://cdn.jsdelivr.net/gh/devicons/devicon/icons/grafana/grafana-original.svg', description: 'An open-source platform for data visualization, monitoring, and analysis.' },
-    ];
+  const resetTimeout = () => {
+    if (timeoutRef.current) clearTimeout(timeoutRef.current);
+  };
 
-    const resetTimeout = () => {
-        if (timeoutRef.current) {
-            clearTimeout(timeoutRef.current);
-        }
+  useEffect(() => {
+    resetTimeout();
+    timeoutRef.current = setTimeout(() =>
+      setCurrentIndex((prev) => (prev === devopsTools.length - 1 ? 0 : prev + 1)),
+      10000
+    );
+    return () => resetTimeout();
+  }, [currentIndex, devopsTools.length]);
+
+  const goToSlide = (index) => {
+    setCurrentIndex(index);
+  };
+
+  const getCardStyle = (index) => {
+    const offset = index - currentIndex;
+    const total = devopsTools.length;
+    
+    let adjustedOffset = offset;
+    if (offset > total / 2) {
+      adjustedOffset = offset - total;
+    } else if (offset < -total / 2) {
+      adjustedOffset = offset + total;
     }
 
-    useEffect(() => {
-        resetTimeout();
-        timeoutRef.current = setTimeout(
-            () => 
-                setCurrentIndex((prevIndex) => 
-                    prevIndex === devopsTools.length - 1 ? 0 : prevIndex + 1
-                ),
-            7000 // Slower speed: 7 seconds
-        );
+    const scale = adjustedOffset === 0 ? 1 : 0.8;
+    const opacity = adjustedOffset === 0 ? 1 : (Math.abs(adjustedOffset) === 1 ? 0.6 : 0);
+    const zIndex = total - Math.abs(adjustedOffset);
+    const translateX = adjustedOffset * 60;
+    const blur = Math.abs(adjustedOffset) > 0 ? 'blur(4px)' : 'blur(0px)';
 
-        return () => {
-            resetTimeout();
-        };
-    }, [currentIndex, devopsTools.length]);
-
-    const prevSlide = () => {
-        const isFirstSlide = currentIndex === 0;
-        const newIndex = isFirstSlide ? devopsTools.length - 1 : currentIndex - 1;
-        setCurrentIndex(newIndex);
+    return {
+      transform: `translateX(${translateX}%) scale(${scale})`,
+      opacity: opacity,
+      zIndex: zIndex,
+      filter: blur,
+      transition: 'all 0.5s ease-in-out',
     };
+  };
 
-    const nextSlide = () => {
-        const isLastSlide = currentIndex === devopsTools.length - 1;
-        const newIndex = isLastSlide ? 0 : currentIndex + 1;
-        setCurrentIndex(newIndex);
-    };
+  return (
+    <div className="w-full relative flex flex-col items-center justify-center py-8">
+      <div className="relative w-full h-[26rem] flex items-center justify-center">
+        {devopsTools.map((tool, index) => {
+          // --- THIS IS THE ONLY CHANGE: Dynamic classes for solid/transparent background ---
+          const isCenter = index === currentIndex;
+          const cardClasses = `p-8 rounded-2xl shadow-2xl border border-white/20 flex flex-col md:flex-row items-center gap-8 min-h-[22rem] transition-all duration-500 ${
+            isCenter ? 'bg-[#2a3f54]' : 'bg-[#2a3f54]/80 backdrop-blur-lg'
+          }`;
 
-    return (
-        <div className="w-full mx-auto relative group">
-            <div className="overflow-hidden relative h-64 rounded-2xl shadow-2xl bg-[#2a3f54]/80 backdrop-blur-lg border border-white/20">
-                <div 
-                    className="flex transition-transform ease-in-out duration-300 h-full"
-                    style={{ transform: `translateX(-${currentIndex * 100}%)` }}
-                >
-                    {devopsTools.map((tool, index) => (
-                        <div key={index} className="w-full flex-shrink-0 p-8 flex flex-col md:flex-row items-center justify-center gap-8 h-full">
-                            {/* Left Column: Logo and Name */}
-                            <div className="flex-shrink-0 flex flex-col items-center w-32">
-                                <img 
-                                    src={tool.logoUrl} 
-                                    alt={`${tool.name} logo`} 
-                                    className="h-20 w-auto object-contain" 
-                                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/80x80/e2e8f0/64748b?text=LOGO'; }}
-                                />
-                                <h4 className="font-semibold text-lg text-white mt-3 text-center">{tool.name}</h4>
-                            </div>
-                            {/* Right Column: Description */}
-                            <div className="text-center md:text-left md:border-l border-gray-500 md:pl-8">
-                                <p className="text-gray-300 max-w-sm">{tool.description}</p>
-                            </div>
-                        </div>
-                    ))}
+          return (
+            <div
+              key={tool.name}
+              className="absolute w-full max-w-2xl cursor-pointer"
+              style={getCardStyle(index)}
+              onClick={() => goToSlide(index)}
+            >
+              <div className={cardClasses}>
+                <div className="flex-shrink-0 flex flex-col items-center justify-center space-y-4 md:w-1/4">
+                  <img
+                    src={tool.logoUrl}
+                    alt={`${tool.name} logo`}
+                    className="h-24 w-auto object-contain"
+                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/80x80/e2e8f0/64748b?text=LOGO'; }}
+                  />
+                  <h4 className="font-bold text-2xl text-white text-center tracking-wider">{tool.name}</h4>
                 </div>
+                <div className="md:w-3/4">
+                  <p className="text-gray-300 text-base md:text-lg leading-relaxed text-center md:text-left">{tool.description}</p>
+                </div>
+              </div>
             </div>
-            
-            <button onClick={prevSlide} className="absolute top-1/2 -translate-y-1/2 left-4 z-10 bg-white/20 hover:bg-white/40 backdrop-blur-sm rounded-full p-2 shadow-md transition group-hover:opacity-100 opacity-0">
-                <ChevronLeft className="h-6 w-6 text-white" />
-            </button>
-            
-            <button onClick={nextSlide} className="absolute top-1/2 -translate-y-1/2 right-4 z-10 bg-white/20 hover:bg-white/40 backdrop-blur-sm rounded-full p-2 shadow-md transition group-hover:opacity-100 opacity-0">
-                <ChevronRight className="h-6 w-6 text-white" />
-            </button>
-        </div>
-    );
+          );
+        })}
+      </div>
+    </div>
+  );
 };
 
-
-// A card for displaying team member information.
 const TeamCard = ({ name, designation, photoUrl, animationDelay }) => (
-    <div 
-        className="flex-shrink-0 w-full bg-[#2a3f54]/40 backdrop-blur-md border border-blue-400/50 rounded-2xl shadow-lg p-6 text-center transition-all duration-300 hover:-translate-y-3 hover:shadow-xl hover:shadow-orange-400/30 animate-fade-in-up"
-        style={{ animationDelay }}
-    >
-        <img 
-            src={photoUrl} 
-            alt={name} 
-            className="w-24 h-24 mx-auto object-cover border-4 border-orange-400 rounded-full"
-            onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/96x96/e2e8f0/64748b?text=Photo'; }}
-        />
-        <h4 className="font-bold text-lg mt-4 text-slate-800">{name}</h4>
-        <p className="text-sm text-[#2a3f54] font-medium mt-1 whitespace-pre-line">{designation}</p>
-    </div>
+  <div
+    className="flex-shrink-0 w-full bg-slate-400 backdrop-blur-md border border-gray-400/50 rounded-2xl shadow-lg p-6 text-center transition-all duration-300 hover:-translate-y-3 hover:shadow-xl hover:shadow-orange-400/30 animate-fade-in-up"
+    style={{ animationDelay }}
+  >
+    <img
+      src={photoUrl}
+      alt={name}
+      className="w-24 h-24 mx-auto object-cover border-4 border-orange-400 rounded-full"
+      onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/96x96/e2e8f0/64748b?text=Photo'; }}
+    />
+    <h4 className="font-bold text-lg mt-4 text-slate-800">{name}</h4>
+    <p className="text-sm text-[#2a3f54] font-medium mt-1 whitespace-pre-line">{designation}</p>
+  </div>
 );
 
-
-// A card for displaying intern information, used in the marquee.
 const InternCard = ({ name, photoUrl }) => (
-    <div className="h-full flex-shrink-0 w-full bg-white rounded-2xl shadow-lg p-6 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-orange-400/20 flex flex-col">
-        <div className="flex-grow">
-            <img 
-                src={photoUrl} 
-                alt={name} 
-                className="w-24 h-24 rounded-full mx-auto object-cover border-4 border-orange-400"
-                onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/96x96/e2e8f0/64748b?text=Photo'; }}
-            />
-            <h4 className="font-bold text-lg mt-4 text-slate-800">{name}</h4>
-        </div>
-        <div className="mt-auto border-t border-slate-400 pt-3 w-full">
-            <p className="text-center text-sm font-semibold text-orange-400">
-                RigelX Infotech Private Limited
-            </p>
-        </div>
+  <div className="h-full flex-shrink-0 w-full bg-white rounded-2xl shadow-lg p-6 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-orange-400/20 flex flex-col">
+    <div className="flex-grow">
+      <img
+        src={photoUrl}
+        alt={name}
+        className="w-24 h-24 rounded-full mx-auto object-cover border-4 border-orange-400"
+        onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/96x96/e2e8f0/64748b?text=Photo'; }}
+      />
+      <h4 className="font-bold text-lg mt-4 text-slate-800">{name}</h4>
     </div>
+    <div className="mt-auto border-t border-slate-400 pt-3 w-full">
+      <p className="text-center text-sm font-semibold text-orange-400">
+        RigelX Infotech Private Limited
+      </p>
+    </div>
+  </div>
 );
 
-// An infinitely scrolling marquee of intern cards.
 const InternsMarquee = () => {
-    const studentData = [
-        { name: 'Tanvi Pawar', photoUrl: TanviPawar }, { name: 'Anubhav Singh', photoUrl: AnubhavSingh },
-        { name: 'Omkar Chadgaonkar', photoUrl: OmkarChadgaonkar }, { name: 'Anjali Singh', photoUrl: AnjaliSingh },
-        { name: 'Rutuja More', photoUrl: RutujaMore }, { name: 'Prabhat Mahadik', photoUrl: PrabhatMahadik },
-        { name: 'Bhavesh Marathe', photoUrl: BhaveshMarathe }, { name: 'Sanket Kurle', photoUrl: SanketKurle },
-        { name: 'Rutuja Manore', photoUrl: RutujaManore }, { name: 'Prasad Kotian', photoUrl: PrasadKotian },
-        { name: 'Pranav Jadhav', photoUrl: PranavJadhav }, { name: 'Kinjal Paradkar', photoUrl: KinjalParadkar },
-        { name: 'Ananya Mishra', photoUrl: AnanyaMishra }, { name: 'Aryan Pardeshi', photoUrl: AryanPardeshi },
-        { name: 'Raj Mehta', photoUrl: RajMehta },
-    ];
-    const extendedStudentData = [...studentData, ...studentData];
+  const studentData = [
+    { name: 'Tanvi Pawar', photoUrl: TanviPawar }, { name: 'Anubhav Singh', photoUrl: AnubhavSingh },
+    { name: 'Omkar Chadgaonkar', photoUrl: OmkarChadgaonkar }, { name: 'Anjali Singh', photoUrl: AnjaliSingh },
+    { name: 'Rutuja More', photoUrl: RutujaMore }, { name: 'Prabhat Mahadik', photoUrl: PrabhatMahadik },
+    { name: 'Bhavesh Marathe', photoUrl: BhaveshMarathe }, { name: 'Sanket Kurle', photoUrl: SanketKurle },
+    { name: 'Rutuja Manore', photoUrl: RutujaManore }, { name: 'Prasad Kotian', photoUrl: PrasadKotian },
+    { name: 'Pranav Jadhav', photoUrl: PranavJadhav }, { name: 'Kinjal Paradkar', photoUrl: KinjalParadkar },
+    { name: 'Ananya Mishra', photoUrl: AnanyaMishra }, { name: 'Aryan Pardeshi', photoUrl: AryanPardeshi },
+    { name: 'Raj Mehta', photoUrl: RajMehta },
+  ];
+  const extendedStudentData = [...studentData, ...studentData];
 
-    return (
-        <div className="w-full overflow-hidden relative py-4">
-            <div className="flex animate-marquee hover:pause-animation">
-                {extendedStudentData.map((student, index) => (
-                    <div key={index} className="flex-shrink-0 w-64 mx-4">
-                        <InternCard name={student.name} photoUrl={student.photoUrl} />
-                    </div>
-                ))}
-            </div>
-        </div>
-    );
+  return (
+    <div className="w-full overflow-hidden relative py-4">
+      <div className="flex animate-marquee hover:pause-animation">
+        {extendedStudentData.map((student, index) => (
+          <div key={index} className="flex-shrink-0 w-64 mx-4">
+            <InternCard name={student.name} photoUrl={student.photoUrl} />
+          </div>
+        ))}
+      </div>
+    </div>
+  );
 }
 
-// The main component for the "About Us" page.
 const About = () => {
+    const pageWrapperRef = useRef(null);
+
     const mentorsData = [
         { name: 'Shreyash Narvekar', designation: 'President\nTechnical Team', photoUrl: PresidentShreyash },
         { name: 'Akshata Khandekar', designation: 'Design Team', photoUrl: DesignAkshata},
@@ -377,12 +376,12 @@ const About = () => {
         { name: 'Shivansh Shukla', designation: 'Publicity Co-Head', photoUrl: Publicitycohead_Shivansh },
     ];
 
- return (
+  return (
     <>
       <CustomStyles />
-      <section className="relative min-h-screen flex flex-col pt-24 pb-24 overflow-hidden bg-slate-100 space-y-24">
+      <section ref={pageWrapperRef} className="relative flex flex-col pt-24 pb-24 overflow-hidden bg-slate-100 space-y-24">
         
-        <div className="absolute inset-0 z-0"><NetworkBackground /></div>
+        <div className="absolute inset-0 z-0"><NetworkBackground containerRef={pageWrapperRef} /></div>
 
         <div className="relative z-10 container mx-auto text-center px-4 sm:px-6 lg:px-8">
             <h2 className="text-4xl md:text-5xl font-extrabold text-[#2a3f54] drop-shadow-lg mb-12 animate-fade-in-up">Our Guiding Principles</h2>
@@ -417,7 +416,7 @@ const About = () => {
         <div className="relative z-10 w-full text-center px-4 sm:px-6 lg:px-8">
              <h2 className="text-4xl md:text-5xl font-extrabold text-[#2a3f54] drop-shadow-lg mb-4 animate-fade-in-up" style={{animationDelay: '3.3s'}}>Our Club Expertise</h2>
             <p className="max-w-3xl mx-auto text-slate-600 mb-8 animate-fade-in-up" style={{animationDelay: '3.4s'}}>We focus on hands-on learning with the industry's most essential DevOps tools, preparing our members for real-world challenges.</p>
-            <div className="relative"><ToolsSlider /></div>
+            <ToolsSlider />
         </div>
 
         <div className="relative z-10 w-full text-center bg-slate-100/80 backdrop-blur-sm py-16">

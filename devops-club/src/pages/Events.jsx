@@ -3,7 +3,6 @@
 import React, { useState, useRef, useEffect, useMemo } from 'react';
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from '../firebaseConfig'; // Make sure this path is correct
-// MODIFIED: Added UserCheck icon for the speaker
 import { Calendar, Clock, MapPin, Globe, X, ArrowLeft, Download, Search, Filter, UserCheck } from 'lucide-react';
 
 // --- Helper Components & Constants ---
@@ -20,8 +19,8 @@ const departments = [
     "Select Your Department", "Information Technology", "Computer Engineering", "Data Science Engineering", "Mechanical Engineering", "Civil Engineering", "AI/ML Engineering"
 ];
 
-// --- NEW: Advanced Filter Component (Simplified) ---
-const FilterControls = ({ tempFilters, onTempFilterChange, onApply, onClear }) => {
+// --- Filter Component (YAHAN LAYOUT FINAL CHANGE KIYA GAYA HAI) ---
+const FilterControls = ({ tempFilters, onTempFilterChange, onApply, onClear, onFeedbackClick }) => {
     const [isFilterOpen, setIsFilterOpen] = useState(false);
     const filterRef = useRef(null);
 
@@ -56,55 +55,70 @@ const FilterControls = ({ tempFilters, onTempFilterChange, onApply, onClear }) =
     };
 
     return (
-        <div className="relative w-full max-w-2xl mx-auto mb-12 z-30">
-            <div className="relative flex items-center bg-white/90 rounded-full shadow-lg p-2">
-                <Search className="absolute left-5 w-5 h-5 text-slate-400 pointer-events-none" />
+        <div className="w-full max-w-4xl mx-auto mb-12 z-30 flex items-center justify-center gap-x-3 sm:gap-x-4">
+            {/* Search bar with filter button inside */}
+            <div className="relative flex-grow">
+                <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
                 <input
                     type="text"
                     id="search"
                     name="search"
-                    placeholder="Search by name and press Enter..."
+                    placeholder="Search for events..."
                     value={tempFilters.search}
                     onChange={onTempFilterChange}
                     onKeyDown={handleSearchKeyDown}
-                    className="w-full bg-transparent pl-12 pr-16 py-2 text-slate-800 focus:outline-none"
+                    className="w-full bg-white/90 rounded-full shadow-lg pl-12 pr-16 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <div className="relative" ref={filterRef}>
-                    <button onClick={() => setIsFilterOpen(!isFilterOpen)} className="absolute right-2 top-1/2 -translate-y-1/2 flex items-center justify-center w-10 h-10 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors shadow">
-                        <Filter size={20} />
-                    </button>
-                    {isFilterOpen && (
-                        <div className="absolute top-full right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl p-4 z-20">
-                            <h4 className="font-bold text-slate-800 mb-4 text-left">Filter Events</h4>
-                            <div className="space-y-4">
-                                <div>
-                                    <label htmlFor="date-filter" className="block text-sm font-medium text-slate-700 mb-1 text-left">Specific Date</label>
-                                    <input
-                                        type="date"
-                                        id="date-filter"
-                                        name="date"
-                                        value={tempFilters.date}
-                                        onChange={onTempFilterChange}
-                                        className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition"
-                                    />
+                <div className="absolute right-1.5 top-1/2 -translate-y-1/2">
+                    <div className="relative" ref={filterRef}>
+                        <button
+                            onClick={() => setIsFilterOpen(!isFilterOpen)}
+                            className="flex items-center justify-center w-11 h-11 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
+                            title="Filter Events"
+                        >
+                            <Filter size={20} />
+                        </button>
+                        {isFilterOpen && (
+                            <div className="absolute top-full right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl p-4 z-20">
+                                <h4 className="font-bold text-slate-800 mb-4 text-left">Filter Events</h4>
+                                <div className="space-y-4">
+                                    <div>
+                                        <label htmlFor="date-filter" className="block text-sm font-medium text-slate-700 mb-1 text-left">Specific Date</label>
+                                        <input
+                                            type="date"
+                                            id="date-filter"
+                                            name="date"
+                                            value={tempFilters.date}
+                                            onChange={onTempFilterChange}
+                                            className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition"
+                                        />
+                                    </div>
+                                </div>
+                                <div className="flex justify-between items-center mt-6">
+                                    <button onClick={handleClear} className="text-sm font-semibold text-slate-500 hover:text-slate-800">Clear All</button>
+                                    <button onClick={handleApply} className="bg-blue-500 text-white font-bold py-2 px-5 rounded-full hover:bg-blue-600 transition-colors duration-300">Apply Filters</button>
                                 </div>
                             </div>
-                            <div className="flex justify-between items-center mt-6">
-                                <button onClick={handleClear} className="text-sm font-semibold text-slate-500 hover:text-slate-800">Clear All</button>
-                                <button onClick={handleApply} className="bg-blue-500 text-white font-bold py-2 px-5 rounded-full hover:bg-blue-600 transition-colors duration-300">Apply Filters</button>
-                            </div>
-                        </div>
-                    )}
+                        )}
+                    </div>
                 </div>
             </div>
+
+            {/* Feedback button ab search bar ke bahar hai */}
+            <button
+                onClick={onFeedbackClick}
+                className="flex-shrink-0 flex items-center justify-center px-5 h-[50px] bg-orange-500 text-white rounded-full font-semibold text-sm hover:bg-orange-600 transition-colors shadow-lg"
+                title="Give Feedback"
+            >
+                Feedback
+            </button>
         </div>
     );
 };
 
 
-// --- Custom Select Dropdown Component ---
+// --- Custom Select Dropdown Component --- (No Changes)
 const CustomSelect = ({ id, options, value, onChange }) => {
-    // ... (component code is unchanged)
     const [isOpen, setIsOpen] = useState(false);
     const selectRef = useRef(null);
     useEffect(() => {
@@ -123,22 +137,45 @@ const CustomSelect = ({ id, options, value, onChange }) => {
     );
 };
 
-// --- Feedback Form Section ---
-const FeedbackFormSection = ({ dynamicEvents }) => {
-    // ... (component code is unchanged)
+// --- Feedback Modal --- (No Changes)
+const FeedbackModal = ({ dynamicEvents, onClose }) => {
     const [formData, setFormData] = useState({ name: '', email: '', moodleId: '', department: departments[0], event: dynamicEvents.length > 1 ? dynamicEvents[0] : "No upcoming events",  feedback: '' });
     const [submitting, setSubmitting] = useState(false);
     const [submissionStatus, setSubmissionStatus] = useState(null);
     const [currentDate] = useState(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
     const handleChange = (e) => { const { id, value } = e.target; setFormData(prev => ({ ...prev, [id]: value })); };
     const handleSelectChange = (id, value) => { setFormData(prev => ({ ...prev, [id]: value })); };
-    const handleSubmit = (e) => { e.preventDefault(); if (submitting || formData.event === "Select Event" || formData.department === "Select Your Department") { alert("Please select a valid event and department."); return; }; setSubmitting(true); setSubmissionStatus(null); const GOOGLE_SCRIPT_URL = import.meta.env.VITE_EVENTS_FEEDBACK_SCRIPT_URL; const dataToSubmit = new FormData(); dataToSubmit.append('Date', currentDate); dataToSubmit.append('Name', formData.name); dataToSubmit.append('Email', formData.email); dataToSubmit.append('MoodleID', formData.moodleId); dataToSubmit.append('Department', formData.department); dataToSubmit.append('Event', formData.event); dataToSubmit.append('Feedback', formData.feedback); fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: dataToSubmit }).then(res => res.json()).then(data => { if (data.result === 'success') { setSubmissionStatus('success'); setFormData({ name: '', email: '', moodleId: '', department: departments[0], event: dynamicEvents.length > 1 ? dynamicEvents[0] : "No upcoming events", feedback: '' }); } else { throw new Error(data.message || 'An unknown error occurred on the server.'); } }).catch(err => { console.error("Submission Error:", err); setSubmissionStatus('error'); }).finally(() => { setSubmitting(false); setTimeout(() => setSubmissionStatus(null), 5000); }); };
-    return (<div className="w-full bg-white/95 border border-slate-200 rounded-2xl shadow-xl p-8 text-slate-800 z-10"><form onSubmit={handleSubmit} className="space-y-6"><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="relative"><UserIcon /><input type="text" id="name" placeholder="Your Name" value={formData.name} onChange={handleChange} required className="w-full pl-10 pr-4 py-3 bg-slate-100 border border-slate-300 rounded-lg" /></div><div className="relative"><MailIcon /><input type="email" id="email" placeholder="Your Email" value={formData.email} onChange={handleChange} required className="w-full pl-10 pr-4 py-3 bg-slate-100 border border-slate-300 rounded-lg" /></div></div><div className="grid grid-cols-1 md:grid-cols-2 gap-6"><div className="relative"><IdCardIcon /><input type="text" id="moodleId" placeholder="Moodle ID" value={formData.moodleId} onChange={handleChange} required className="w-full pl-10 pr-4 py-3 bg-slate-100 border border-slate-300 rounded-lg" /></div><CustomSelect id="department" options={departments} value={formData.department} onChange={handleSelectChange} /></div><CustomSelect id="event" options={dynamicEvents} value={formData.event} onChange={handleSelectChange} /><textarea id="feedback" placeholder="Share your detailed feedback..." value={formData.feedback} onChange={handleChange} required rows="5" className="w-full px-4 py-3 bg-slate-100 border border-slate-300 rounded-lg"></textarea><div className="text-center pt-4"><button type="submit" disabled={submitting} className="w-full md:w-auto font-bold text-lg text-white px-10 py-3 bg-slate-800 rounded-lg hover:bg-orange-500 disabled:bg-slate-400">{submitting ? 'Sending...' : 'Submit Feedback'}</button>{submissionStatus === 'success' && <p className="mt-4 text-green-600">✅ Success! Thank you for your feedback.</p>}{submissionStatus === 'error' && <p className="mt-4 text-red-600">❌ Error! Could not submit. Please try again.</p>}</div></form></div>);
+    const handleSubmit = (e) => { e.preventDefault(); if (submitting || formData.event === "Select Event" || formData.department === "Select Your Department") { alert("Please select a valid event and department."); return; }; setSubmitting(true); setSubmissionStatus(null); const GOOGLE_SCRIPT_URL = import.meta.env.VITE_EVENTS_FEEDBACK_SCRIPT_URL; const dataToSubmit = new FormData(); dataToSubmit.append('Date', currentDate); dataToSubmit.append('Name', formData.name); dataToSubmit.append('Email', formData.email); dataToSubmit.append('MoodleID', formData.moodleId); dataToSubmit.append('Department', formData.department); dataToSubmit.append('Event', formData.event); dataToSubmit.append('Feedback', formData.feedback); fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: dataToSubmit }).then(res => res.json()).then(data => { if (data.result === 'success') { setSubmissionStatus('success'); setFormData({ name: '', email: '', moodleId: '', department: departments[0], event: dynamicEvents.length > 1 ? dynamicEvents[0] : "No upcoming events", feedback: '' }); setTimeout(() => { onClose(); }, 2000); } else { throw new Error(data.message || 'An unknown error occurred on the server.'); } }).catch(err => { console.error("Submission Error:", err); setSubmissionStatus('error'); }).finally(() => { setSubmitting(false); setTimeout(() => setSubmissionStatus(null), 5000); }); };
+    
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full relative">
+                <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-slate-800"><X size={24} /></button>
+                <h2 className="text-3xl font-extrabold text-[#2a3f54] text-center mb-6">Share Your Feedback</h2>
+                <form onSubmit={handleSubmit} className="space-y-6">
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="relative"><UserIcon /><input type="text" id="name" placeholder="Your Name" value={formData.name} onChange={handleChange} required className="w-full pl-10 pr-4 py-3 bg-slate-100 border border-slate-300 rounded-lg" /></div>
+                        <div className="relative"><MailIcon /><input type="email" id="email" placeholder="Your Email" value={formData.email} onChange={handleChange} required className="w-full pl-10 pr-4 py-3 bg-slate-100 border border-slate-300 rounded-lg" /></div>
+                    </div>
+                    <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+                        <div className="relative"><IdCardIcon /><input type="text" id="moodleId" placeholder="Moodle ID" value={formData.moodleId} onChange={handleChange} required className="w-full pl-10 pr-4 py-3 bg-slate-100 border border-slate-300 rounded-lg" /></div>
+                        <CustomSelect id="department" options={departments} value={formData.department} onChange={handleSelectChange} />
+                    </div>
+                    <CustomSelect id="event" options={dynamicEvents} value={formData.event} onChange={handleSelectChange} />
+                    <textarea id="feedback" placeholder="Share your detailed feedback..." value={formData.feedback} onChange={handleChange} required rows="5" className="w-full px-4 py-3 bg-slate-100 border border-slate-300 rounded-lg"></textarea>
+                    <div className="text-center pt-4">
+                        <button type="submit" disabled={submitting} className="w-full md:w-auto font-bold text-lg text-white px-10 py-3 bg-slate-800 rounded-lg hover:bg-orange-500 disabled:bg-slate-400">{submitting ? 'Sending...' : 'Submit Feedback'}</button>
+                        {submissionStatus === 'success' && <p className="mt-4 text-green-600">✅ Success! Thank you for your feedback.</p>}
+                        {submissionStatus === 'error' && <p className="mt-4 text-red-600">❌ Error! Could not submit. Please try again.</p>}
+                    </div>
+                </form>
+            </div>
+        </div>
+    );
 };
 
-// --- Registration Form ---
+// --- Registration Form --- (No Changes)
 const RegistrationForm = ({ event, onClose }) => {
-    // ... (component code is unchanged)
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
     const [formData, setFormData] = useState({ Event: event.name, FullName: '', Email: '', Phone: '', MoodleID: '', Semester: '', Branch: '', Division: '' });
@@ -147,18 +184,15 @@ const RegistrationForm = ({ event, onClose }) => {
     return (<div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4"><div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full relative"><button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-slate-800"><X size={24} /></button>{isSubmitted ? (<div className="text-center"><h3 className="text-2xl font-bold text-blue-600 mb-4">Registration Confirmed!</h3><p className="text-slate-600 mb-2">Thank you for registering for <span className="font-semibold">{event.name}</span>.</p><button onClick={onClose} className="mt-6 bg-blue-500 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-600">Close</button></div>) : (<><div className="p-3 bg-slate-100 rounded-lg text-center mb-6"><p className="text-sm text-slate-600">You are registering for:</p><p className="font-bold text-lg text-blue-600">{event.name}</p></div><form onSubmit={handleSubmit} className="space-y-4"><div><label className="text-sm font-medium text-slate-700">Full Name</label><input type="text" name="FullName" value={formData.FullName} onChange={handleInputChange} required className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md" /></div><div><label className="text-sm font-medium text-slate-700">Email Address</label><input type="email" name="Email" value={formData.Email} onChange={handleInputChange} required className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md" /></div><div><label className="text-sm font-medium text-slate-700">Phone Number</label><input type="tel" name="Phone" value={formData.Phone} onChange={handleInputChange} required pattern="[0-9]{10}" className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md" /></div><div><label className="text-sm font-medium text-slate-700">Moodle ID</label><input type="text" name="MoodleID" value={formData.MoodleID} onChange={handleInputChange} required className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md" /></div><div className="grid grid-cols-1 sm:grid-cols-3 gap-4"><div><label className="text-sm font-medium text-slate-700">Semester</label><select name="Semester" value={formData.Semester} onChange={handleInputChange} required className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md"><option value="">Select</option>{[...Array(8).keys()].map(i => <option key={i+1} value={i+1}>{i+1}</option>)}</select></div><div><label className="text-sm font-medium text-slate-700">Branch</label><select name="Branch" value={formData.Branch} onChange={handleInputChange} required className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md"><option value="">Select</option><option value="Computer">Computer</option><option value="IT">IT</option><option value="AIML">AIML</option><option value="Data Science">Data Science</option><option value="Mechanical">Mechanical</option><option value="Civil">Civil</option></select></div><div><label className="text-sm font-medium text-slate-700">Division</label><select name="Division" value={formData.Division} onChange={handleInputChange} required className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md"><option value="">Select</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select></div></div><div className="text-right pt-4"><button type="submit" disabled={isSubmitting} className="inline-block bg-blue-500 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-600 disabled:bg-slate-400">{isSubmitting ? 'Submitting...' : 'Submit Registration'}</button></div></form></>)}</div></div>);
 };
 
-// --- Child Components for Displaying Events ---
+// --- Child Components for Displaying Events --- (No Changes)
 const EventCard = ({ event, onRegister }) => (
-    // ... (component code is unchanged)
     <div className="bg-white rounded-2xl shadow-xl flex flex-col transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl"><img src={event.posterUrl} alt={event.name} className="w-full h-48 object-cover rounded-t-2xl" onError={(e) => { e.target.src = 'https://placehold.co/600x400/2a3f54/f97316?text=Event'; }} /><div className="p-6 flex flex-col flex-grow"><h3 className="text-xl font-bold text-orange-500 mb-2">{event.name}</h3><div className="border-t border-slate-200 pt-4 space-y-2 text-sm text-slate-500"><p className="flex items-center"><Calendar className="w-4 h-4 mr-2 text-blue-500" /> {new Date(event.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>{event.time && <p className="flex items-center"><Clock className="w-4 h-4 mr-2 text-blue-500" /> {event.time}</p>}<p className="flex items-center">{event.mode === 'Offline' ? <MapPin className="w-4 h-4 mr-2 text-blue-500" /> : <Globe className="w-4 h-4 mr-2 text-blue-500" />} {event.location}</p></div><div className="mt-auto pt-6 text-center"><button onClick={onRegister} className="inline-block bg-blue-500 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-600 transition-colors duration-300 shadow-lg">Register Now</button></div></div></div>
 );
 
 const CompactPastEventCard = ({ event, onViewMore }) => (
-    // ... (component code is unchanged)
     <div className="bg-slate-50 rounded-xl shadow-lg flex flex-col transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden"><img src={event.cardImageUrl} alt={event.name} className="w-full h-40 object-cover" onError={(e) => { e.target.src = 'https://placehold.co/400x400/9ca3af/ffffff?text=Past+Event'; }} /><div className="p-4 flex flex-col flex-grow text-left w-full"><h3 className="font-bold text-md text-orange-500 mb-1 truncate">{event.name}</h3><p className="flex items-center text-xs text-slate-600 mb-4"><Calendar className="w-3 h-3 mr-1.5" /> {new Date(event.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p><div className="mt-auto"><button onClick={onViewMore} className="w-full text-xs bg-blue-500 text-white font-bold py-2 px-4 rounded-full hover:bg-blue-600">View More</button></div></div></div>
 );
 
-// MODIFICATION START: Added speaker name display to PastEventDetail
 const PastEventDetail = ({ event, onBack }) => (
     <div className="relative z-10 container mx-auto px-4 w-full max-w-6xl">
         <button onClick={onBack} className="flex items-center text-blue-500 hover:text-blue-700 font-semibold mb-8">
@@ -168,8 +202,6 @@ const PastEventDetail = ({ event, onBack }) => (
             <img src={event.posterUrl} alt={event.name} className="w-full h-64 md:h-96 object-cover" onError={(e) => { e.target.src = 'https://placehold.co/1200x800/2a3f54/ffffff?text=Event+Poster'; }}/>
             <div className="p-8 md:p-12">
                 <h2 className="text-4xl font-extrabold text-[#2a3f54] mb-4">{event.name}</h2>
-                
-                {/* Container for event details */}
                 <div className="flex flex-wrap gap-x-8 gap-y-4 mb-8 text-slate-500">
                     <p className="flex items-center">
                         <Calendar className="w-5 h-5 mr-3 text-slate-400" />
@@ -181,7 +213,6 @@ const PastEventDetail = ({ event, onBack }) => (
                             Time: {event.time}
                         </p>
                     )}
-                    {/* NEW: Display Speaker Name if it exists */}
                     {event.speaker && (
                         <p className="flex items-center">
                             <UserCheck className="w-5 h-5 mr-3 text-slate-400" />
@@ -189,12 +220,10 @@ const PastEventDetail = ({ event, onBack }) => (
                         </p>
                     )}
                 </div>
-
                 <div className="prose max-w-none text-slate-700 mb-12">
                     <h3 className="text-2xl font-bold text-slate-800 mb-3">Event Brief</h3>
                     <p className="text-justify whitespace-pre-wrap">{event.brief}</p>
                 </div>
-
                 {event.reportUrl && (
                     <div className="mb-12 text-center">
                         <a href={event.reportUrl} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-2 bg-green-600 text-white font-bold py-3 px-6 rounded-full hover:bg-green-700 shadow-lg">
@@ -202,7 +231,6 @@ const PastEventDetail = ({ event, onBack }) => (
                         </a>
                     </div>
                 )}
-                
                 {event.galleryImages && event.galleryImages.length > 0 && (
                     <div className="border-t border-slate-200 pt-12">
                         <h3 className="text-3xl font-bold text-center text-[#2a3f54] mb-8">Event Gallery</h3>
@@ -219,15 +247,13 @@ const PastEventDetail = ({ event, onBack }) => (
         </div>
     </div>
 );
-// MODIFICATION END
 
-
-// --- Main View Component ---
-const MainEventsView = ({ upcomingEvents, pastEvents, onRegister, onViewMore, feedbackEvents, totalEventsCount, filteredEventsCount }) => (
+// --- Main View Component --- (No Changes)
+const MainEventsView = ({ upcomingEvents, pastEvents, onRegister, onViewMore, totalEventsCount, filteredEventsCount }) => (
     <>
         {totalEventsCount > 0 && filteredEventsCount === 0 && (
              <div className="mb-12 max-w-2xl mx-auto bg-yellow-100/80 border border-yellow-300 text-yellow-800 px-6 py-4 rounded-lg">
-                 <p className="font-semibold">No events match your current filters. Try adjusting your search.</p>
+                <p className="font-semibold">No events match your current filters. Try adjusting your search.</p>
              </div>
         )}
 
@@ -248,27 +274,21 @@ const MainEventsView = ({ upcomingEvents, pastEvents, onRegister, onViewMore, fe
         ) : (
              <p className="text-slate-500 bg-white/50 rounded-lg p-8">No past events to display.</p>
         )}
-
-        <div className="mt-24 max-w-4xl mx-auto">
-             <h2 className="text-4xl font-extrabold text-[#2a3f54] drop-shadow-lg mb-12">Share Your Valuable Feedback</h2>
-            <FeedbackFormSection dynamicEvents={feedbackEvents} />
-        </div>
     </>
 );
 
-// --- Parent Component that Fetches Data ---
+// --- Parent Component --- (No Changes to logic)
 export default function Events() {
     const [allEvents, setAllEvents] = useState([]);
     const [loading, setLoading] = useState(true);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [viewingPastEvent, setViewingPastEvent] = useState(null);
+    const [isFeedbackFormOpen, setIsFeedbackFormOpen] = useState(false);
     
-    // MODIFIED: State management for new filter logic
     const initialFilters = { search: '', date: '' };
     const [activeFilters, setActiveFilters] = useState(initialFilters);
     const [tempFilters, setTempFilters] = useState(initialFilters);
-
 
     useEffect(() => {
         const fetchEvents = async () => {
@@ -292,11 +312,9 @@ export default function Events() {
         }
     }, [viewingPastEvent]);
     
-    // MODIFIED: Filtering logic now depends on `activeFilters`
     const filteredEvents = useMemo(() => {
         return allEvents.filter(event => {
             const nameMatch = event.name.toLowerCase().includes(activeFilters.search.toLowerCase());
-            // Fix: Add timezone offset to match input date with Firestore date correctly
             const filterDate = activeFilters.date ? new Date(activeFilters.date) : null;
             if (filterDate) {
                 const userTimezoneOffset = filterDate.getTimezoneOffset() * 60000;
@@ -307,7 +325,6 @@ export default function Events() {
         });
     }, [allEvents, activeFilters]);
 
-    // NEW: Handlers for the new filter component
     const handleTempFilterChange = (e) => {
         const { name, value } = e.target;
         setTempFilters(prev => ({ ...prev, [name]: value }));
@@ -327,18 +344,14 @@ export default function Events() {
     const handleViewMoreClick = (event) => { setViewingPastEvent(event); };
     const handleBackToList = () => { setViewingPastEvent(null); };
     
+    const handleOpenFeedbackForm = () => setIsFeedbackFormOpen(true);
+    const handleCloseFeedbackForm = () => setIsFeedbackFormOpen(false);
+    
     const today = new Date();
     today.setHours(0, 0, 0, 0);
 
-    // --- YAHAN BADLAV KIYA GAYA HAI (CHANGE MADE HERE) ---
-    // New logic: Upcoming events are now filtered by date.
-    // They will disappear automatically after their date has passed.
     const upcomingEvents = filteredEvents.filter(e => e.type === 'upcoming' && new Date(e.date) >= today);
-    
-    // Past events are ONLY shown if their type is explicitly set to 'past' in Firebase.
     const pastEvents = filteredEvents.filter(e => e.type === 'past');
-    // --- BADLAV KHATAM (CHANGE ENDS HERE) ---
-
     const feedbackFormEventsList = ["Select Event", ...allEvents.filter(e => e.type === 'upcoming' && new Date(e.date) >= today).map(e => e.name)];
 
     const renderContent = () => {
@@ -350,19 +363,18 @@ export default function Events() {
         }
         return (
             <div className="relative z-10 container mx-auto text-center px-4 sm:px-6 lg:px-8">
-                {/* MODIFIED: Replaced old filter with the new one */}
                 <FilterControls
                     tempFilters={tempFilters}
                     onTempFilterChange={handleTempFilterChange}
                     onApply={handleApplyFilters}
                     onClear={handleClearFilters}
+                    onFeedbackClick={handleOpenFeedbackForm}
                 />
                 <MainEventsView
                     upcomingEvents={upcomingEvents}
                     pastEvents={pastEvents}
                     onRegister={handleRegisterClick}
                     onViewMore={handleViewMoreClick}
-                    feedbackEvents={feedbackFormEventsList}
                     totalEventsCount={allEvents.length}
                     filteredEventsCount={filteredEvents.length}
                 />
@@ -378,11 +390,12 @@ export default function Events() {
                 {renderContent()}
             </main>
             {isFormOpen && <RegistrationForm event={selectedEvent} onClose={handleCloseForm} />}
+            {isFeedbackFormOpen && <FeedbackModal dynamicEvents={feedbackFormEventsList} onClose={handleCloseFeedbackForm} />}
         </>
     );
 }
 
-// --- GLOBAL STYLES & BACKGROUND (REPLACED) ---
+// --- GLOBAL STYLES & BACKGROUND --- (No Changes)
 const CustomStyles = () => (
     <style>{`
       @keyframes fade-in-up { 0% { opacity: 0; transform: translateY(20px); } 100% { opacity: 1; transform: translateY(0); } }

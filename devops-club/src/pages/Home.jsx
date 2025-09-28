@@ -1,5 +1,6 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-irregular-whitespace */
+// 1. useRef ko import karein
 import React, { useRef, useEffect, useState } from "react";
 import {
   FaShieldAlt,
@@ -17,9 +18,6 @@ import { motion } from "framer-motion";
 import sonalImg from "../assets/sonal.png";
 import vishalImg from "../assets/vishal.png";
 import sujataImg from "../assets/sujata.jpg";
-
-// ## VIDEO IMPORTS REMOVED ##
-// The local .mp4 files are no longer imported.
 
 // Red Hat event images
 import redhat1 from "../assets/redhat1.jpg";
@@ -40,135 +38,135 @@ import redHatLogoHat from "../assets/redhat.png";
 import redHatAcademyLogo from "../assets/redhat-academy-logo.jpg";
 
 const redhatEventImages = [
-    redHatAcademyLogo,
-    redhat1, redhat2, redhat3, redhat4, redhat5, redhat6,
-    redhat7, redhat8, redhat9, redhat10, redhat11, redhat12,
+  redHatAcademyLogo,
+  redhat1, redhat2, redhat3, redhat4, redhat5, redhat6,
+  redhat7, redhat8, redhat9, redhat10, redhat11, redhat12,
 ];
 
-const NetworkBackground = () => {
+// UPDATED BACKGROUND COMPONENT
+const NetworkBackground = ({ containerRef }) => {
     const canvasRef = useRef(null);
-
+  
     useEffect(() => {
-        const canvas = canvasRef.current;
-        if (!canvas) return;
-        const ctx = canvas.getContext('2d');
-        let animationFrameId;
-        let particlesArray;
-
-        const setCanvasDimensions = () => {
-            const dpr = window.devicePixelRatio || 1;
-            const rect = document.body.getBoundingClientRect(); // Use body for full page height
-            if (rect.width > 0 && rect.height > 0) {
-                canvas.width = rect.width * dpr;
-                canvas.height = rect.height * dpr;
-                ctx.scale(dpr, dpr);
-            }
-        };
+      const canvas = canvasRef.current;
+      if (!canvas) return;
+      const ctx = canvas.getContext("2d");
+      let animationFrameId;
+      let particlesArray;
+  
+      const setCanvasDimensions = () => {
+        if (!containerRef.current) return;
+  
+        const dpr = window.devicePixelRatio || 1;
+        const containerHeight = containerRef.current.scrollHeight;
         
-        class Particle {
-            constructor(x, y, directionX, directionY, size, color) {
-                this.x = x; this.y = y; this.directionX = directionX;
-                this.directionY = directionY; this.size = size; this.color = color;
-            }
-            draw() {
-                ctx.beginPath();
-                ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
-                ctx.fillStyle = this.color;
-                ctx.fill();
-            }
-            update() {
-                const clientWidth = canvas.width / (window.devicePixelRatio || 1);
-                const clientHeight = canvas.height / (window.devicePixelRatio || 1);
-                if (this.x > clientWidth + 100 || this.x < -100) this.directionX = -this.directionX;
-                if (this.y > clientHeight + 100 || this.y < -100) this.directionY = -this.directionY;
-                this.x += this.directionX; this.y += this.directionY;
-                this.draw();
-            }
-        }
-
-        function init() {
-            particlesArray = [];
-            const clientWidth = canvas.width / (window.devicePixelRatio || 1);
-            const clientHeight = canvas.height / (window.devicePixelRatio || 1);
-            let numberOfParticles = (clientWidth * clientHeight) / 20000;
-            const colors = ['#f97316', '#3b82f6'];
-            
-            for (let i = 0; i < numberOfParticles; i++) {
-                let size = (Math.random() * 2.5) + 1.5; 
-                let x = (Math.random() * (clientWidth + 200)) - 100;
-                let y = (Math.random() * (clientHeight + 200)) - 100;
-                let directionX = (Math.random() * .3) - .15;
-                let directionY = (Math.random() * .3) - .15;
-                let color = colors[Math.floor(Math.random() * colors.length)];
-                particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
-            }
-        }
-
-        function connect() {
-            const clientWidth = canvas.width / (window.devicePixelRatio || 1);
-            const clientHeight = canvas.height / (window.devicePixelRatio || 1);
-            let opacityValue = 1;
-            for (let a = 0; a < particlesArray.length; a++) {
-                for (let b = a; b < particlesArray.length; b++) {
-                    let distance = ((particlesArray[a].x - particlesArray[b].x) ** 2) + ((particlesArray[a].y - particlesArray[b].y) ** 2);
-                    if (distance < (clientWidth / 9) * (clientHeight / 9)) {
-                        opacityValue = 1 - (distance / 22000);
-                        ctx.strokeStyle = `rgba(42, 63, 84, ${opacityValue})`; 
-                        ctx.lineWidth = 1;
-                        ctx.beginPath();
-                        ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
-                        ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
-                        ctx.stroke();
-                    }
-                }
-            }
-        }
-
-        function animate(timestamp) {
-            if(!ctx || !particlesArray) return;
-            const clientWidth = canvas.width / (window.devicePixelRatio || 1);
-            const clientHeight = canvas.height / (window.devicePixelRatio || 1);
-            ctx.clearRect(0, 0, clientWidth, clientHeight); 
-            
-            const driftX = Math.sin(timestamp / 8000) * 50;
-            const driftY = Math.cos(timestamp / 8000) * 30;
-            
-            ctx.save();
-            ctx.translate(driftX, driftY);
-            particlesArray.forEach(p => p.update());
-            connect();
-            ctx.restore();
-            
-            animationFrameId = window.requestAnimationFrame(animate);
-        }
-        
-        const timeoutId = setTimeout(() => {
-            setCanvasDimensions();
-            init();
-            animate(0);
-        }, 100);
-        
-        const handleResize = () => { 
-            window.cancelAnimationFrame(animationFrameId);
-            setCanvasDimensions(); 
-            init();
-            animate(0);
-        };
-        const resizeObserver = new ResizeObserver(handleResize);
-        resizeObserver.observe(document.body);
-        window.addEventListener('resize', handleResize);
-
-        return () => {
-            clearTimeout(timeoutId);
-            window.cancelAnimationFrame(animationFrameId);
-            window.removeEventListener('resize', handleResize);
-            resizeObserver.disconnect();
-        };
-    }, []);
-
-    return <canvas ref={canvasRef} className="absolute inset-0 z-0 w-full h-full bg-slate-100" style={{ display: 'block' }} />;
+        canvas.style.width = "100%";
+        canvas.style.height = `${containerHeight}px`;
+        canvas.width = canvas.offsetWidth * dpr;
+        canvas.height = containerHeight * dpr;
+        ctx.scale(dpr, dpr);
+      };
+  
+      class Particle {
+          constructor(x, y, directionX, directionY, size, color) {
+              this.x = x; this.y = y; this.directionX = directionX;
+              this.directionY = directionY; this.size = size; this.color = color;
+          }
+          draw() {
+              ctx.beginPath();
+              ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+              ctx.fillStyle = this.color;
+              ctx.fill();
+          }
+          update() {
+              const scaledWidth = canvas.offsetWidth;
+              const scaledHeight = canvas.offsetHeight / (window.devicePixelRatio || 1);
+              if (this.x > scaledWidth + 100 || this.x < -100) this.directionX = -this.directionX;
+              if (this.y > scaledHeight + 100 || this.y < -100) this.directionY = -this.directionY;
+              this.x += this.directionX; this.y += this.directionY;
+              this.draw();
+          }
+      }
+  
+      function init() {
+          particlesArray = [];
+          let numberOfParticles = (canvas.width * canvas.height) / (20000 * (window.devicePixelRatio || 1)**2);
+          const colors = ['#f97316', '#3b82f6'];
+          
+          for (let i = 0; i < numberOfParticles; i++) {
+              let size = (Math.random() * 2.5) + 1.5; 
+              let x = (Math.random() * (canvas.offsetWidth + 200)) - 100;
+              let y = (Math.random() * (canvas.offsetHeight / (window.devicePixelRatio || 1) + 200)) - 100;
+              let directionX = (Math.random() * .3) - .15;
+              let directionY = (Math.random() * .3) - .15;
+              let color = colors[Math.floor(Math.random() * colors.length)];
+              particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
+          }
+      }
+  
+      function connect() {
+          let opacityValue = 1;
+          const scaledWidth = canvas.offsetWidth;
+          const scaledHeight = canvas.offsetHeight / (window.devicePixelRatio || 1);
+          for (let a = 0; a < particlesArray.length; a++) {
+              for (let b = a; b < particlesArray.length; b++) {
+                  let distance = ((particlesArray[a].x - particlesArray[b].x) ** 2) + ((particlesArray[a].y - particlesArray[b].y) ** 2);
+                  if (distance < (scaledWidth / 9) * (scaledHeight / 9)) {
+                      opacityValue = 1 - (distance / 22000);
+                      ctx.strokeStyle = `rgba(42, 63, 84, ${opacityValue})`; 
+                      ctx.lineWidth = 1;
+                      ctx.beginPath();
+                      ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+                      ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+                      ctx.stroke();
+                  }
+              }
+          }
+      }
+  
+      function animate(timestamp) {
+          if(!ctx || !particlesArray) return;
+          ctx.clearRect(0, 0, canvas.width, canvas.height); 
+          
+          const driftX = Math.sin(timestamp / 8000) * 50;
+          const driftY = Math.cos(timestamp / 8000) * 30;
+          
+          ctx.save();
+          ctx.translate(driftX, driftY);
+          particlesArray.forEach(p => p.update());
+          connect();
+          ctx.restore();
+          
+          animationFrameId = window.requestAnimationFrame(animate);
+      }
+  
+      setCanvasDimensions();
+      init();
+      animate(0);
+      
+      const handleResize = () => { 
+          window.cancelAnimationFrame(animationFrameId);
+          setCanvasDimensions(); 
+          init();
+          animate(0);
+      };
+  
+      const resizeObserver = new ResizeObserver(handleResize);
+      if (containerRef.current) {
+        resizeObserver.observe(containerRef.current);
+      }
+      
+      window.addEventListener('resize', handleResize);
+  
+      return () => {
+          window.cancelAnimationFrame(animationFrameId);
+          window.removeEventListener('resize', handleResize);
+          resizeObserver.disconnect();
+      };
+    }, [containerRef]);
+  
+    return <canvas ref={canvasRef} className="absolute inset-0 z-0 w-full bg-slate-100" style={{ display: 'block' }} />;
 };
-
 
 const services = [
   { title: "PLAN", icon: <FaShieldAlt /> },
@@ -186,7 +184,7 @@ const coordinators = [
     name: "Prof. Sonal Jain",
     role: "Assistant Professor at APSIT",
     image: sonalImg,
-    skills: ["RHCSA"],
+    skills: ["RHCSA","Google Certified Educator","Certified Instructor @ Red Hat Academy"],
     linkedinUrl: "https://www.linkedin.com/in/sonal-jain-65235927a/",
   },
   {
@@ -208,7 +206,6 @@ const coordinators = [
   },
 ];
 
-// ## CLOUDINARY URLS ADDED ##
 const events = [
   {
     videoSrc: "https://res.cloudinary.com/dfzlwhsia/video/upload/v1758978245/Sonal_Jain_2_ccod7q.mp4",
@@ -366,6 +363,8 @@ const EventRow = ({ videoSrc, title, description, videoPosition }) => {
 
 const Home = () => {
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
+  // 2. Ref banayein
+  const pageWrapperRef = useRef(null);
 
   const goToPreviousImage = () => {
     const isFirstImage = currentImageIndex === 0;
@@ -391,8 +390,11 @@ const Home = () => {
   }, []); 
 
   return (
-    <div className="relative font-sans">
-      <NetworkBackground />
+    // 3. Ref ko div se attach karein
+    <div ref={pageWrapperRef} className="relative font-sans">
+      
+      {/* 4. Ref ko prop ke zariye pass karein */}
+      <NetworkBackground containerRef={pageWrapperRef} />
 
       {/* Hero Section */}
       <div className="relative h-screen w-full overflow-hidden">
@@ -401,7 +403,6 @@ const Home = () => {
           loop
           muted
           className="absolute top-0 left-0 w-full h-full object-cover z-0"
-          // ## CLOUDINARY URL ADDED ##
           src={"https://res.cloudinary.com/dfzlwhsia/video/upload/v1758979456/video_xrjzqm.mp4"}
         />
         <div className="absolute top-0 left-0 w-full h-full bg-black/60 z-10" />
@@ -451,7 +452,7 @@ const Home = () => {
             whileInView="show"
             viewport={{ once: true, amount: 0.2 }}
             variants={fadeInUp}
-            className="bg-white/40 backdrop-blur-md rounded-3xl p-8 border border-slate-300 shadow-2xl transition-shadow duration-300 ease-in-out hover:shadow-[0_0_15px_rgba(249,115,22,0.6),_0_0_30px_rgba(249,115,22,0.4),_inset_0_0_10px_rgba(249,115,22,0.3)]"
+            className="bg-white backdrop-blur-md rounded-3xl p-8 border border-slate-300 shadow-2xl transition-shadow duration-300 ease-in-out hover:shadow-[0_0_15px_rgba(249,115,22,0.6),_0_0_30px_rgba(249,115,22,0.4),_inset_0_0_10px_rgba(249,115,22,0.3)]"
           >
             <div className="flex justify-center items-center gap-x-4 mb-8">
               <h2 className="text-4xl font-extrabold text-center text-slate-800 drop-shadow-[0_2px_2px_rgba(0,0,0,0.1)]">

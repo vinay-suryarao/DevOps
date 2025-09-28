@@ -3,7 +3,6 @@ import React, { useState, useEffect, useRef } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import {
   Mail,
-  Phone,
   Instagram,
   MapPin,
   Send,
@@ -11,25 +10,28 @@ import {
   CheckCircle,
   AlertTriangle,
 } from 'lucide-react';
+import { FaWhatsapp } from 'react-icons/fa';
 
-// --- Background Component (Replaced) ---
-const NetworkBackground = () => {
+// --- Background Component ---
+const NetworkBackground = ({ containerRef }) => {
     const canvasRef = useRef(null);
 
     useEffect(() => {
         const canvas = canvasRef.current;
-        if (!canvas) return;
+        if (!canvas || !containerRef.current) return;
         const ctx = canvas.getContext('2d');
         let animationFrameId;
         let particlesArray;
 
         const setCanvasDimensions = () => {
+            if (!containerRef.current) return;
             const dpr = window.devicePixelRatio || 1;
-            const bodyHeight = document.body.scrollHeight;
+            const containerHeight = containerRef.current.scrollHeight;
+            
             canvas.style.width = '100%';
-            canvas.style.height = `${bodyHeight}px`;
+            canvas.style.height = `${containerHeight}px`;
             canvas.width = canvas.offsetWidth * dpr;
-            canvas.height = bodyHeight * dpr;
+            canvas.height = containerHeight * dpr;
             ctx.scale(dpr, dpr);
         };
         
@@ -118,7 +120,10 @@ const NetworkBackground = () => {
         };
 
         const resizeObserver = new ResizeObserver(handleResize);
-        resizeObserver.observe(document.body);
+        if (containerRef.current) {
+            resizeObserver.observe(containerRef.current);
+        }
+
         window.addEventListener('resize', handleResize);
 
         return () => {
@@ -126,13 +131,11 @@ const NetworkBackground = () => {
             window.removeEventListener('resize', handleResize);
             resizeObserver.disconnect();
         };
-    }, []);
+      }, [containerRef]);
 
     return <canvas ref={canvasRef} className="absolute inset-0 z-0 w-full h-full bg-slate-100" style={{ display: 'block' }} />;
 };
 
-
-// Custom hook to detect if an element is in view
 const useInView = (options) => {
   const ref = useRef(null);
   const [isInView, setIsInView] = useState(false);
@@ -157,8 +160,6 @@ const useInView = (options) => {
   return [ref, isInView];
 };
 
-// --- Reusable Animated Components ---
-
 const AnimatedSection = ({ children, delay = 0 }) => {
   const [ref, isInView] = useInView({ threshold: 0.1, triggerOnce: true });
   return (
@@ -173,6 +174,7 @@ const AnimatedSection = ({ children, delay = 0 }) => {
   );
 };
 
+// --- ContactCard Component (Reverted to Light Theme) ---
 const ContactCard = ({ icon, title, text, href, isExternal = false, delay = 0 }) => {
   const [ref, isInView] = useInView({ threshold: 0.5, triggerOnce: true });
 
@@ -182,21 +184,21 @@ const ContactCard = ({ icon, title, text, href, isExternal = false, delay = 0 })
       href={href}
       target={isExternal ? "_blank" : "_self"}
       rel={isExternal ? "noopener noreferrer" : ""}
-      className="bg-white/80 backdrop-blur-sm p-6 rounded-2xl shadow-lg flex flex-col items-center text-center transition-all duration-300 hover:shadow-2xl hover:-translate-y-2 group"
+      className="bg-white p-6 rounded-2xl shadow-md flex flex-col items-center text-center transition-all duration-300 hover:shadow-xl hover:-translate-y-2 group border-2 border-transparent hover:border-orange-500"
       initial={{ opacity: 0, y: 50 }}
       animate={{ opacity: isInView ? 1 : 0, y: isInView ? 0 : 50 }}
       transition={{ duration: 0.5, delay }}
     >
-      <div className="bg-slate-100 p-4 rounded-full mb-4 transition-colors duration-300 group-hover:bg-[#113F67]">
+      <div className="bg-orange-100 p-4 rounded-full mb-4 transition-colors duration-300 group-hover:bg-orange-500">
         {icon}
       </div>
       <h3 className="font-bold text-lg text-[#113F67] mb-1">{title}</h3>
-      <p className="text-slate-500 text-sm group-hover:text-[#113F67] transition-colors">{text}</p>
+      <p className="text-slate-500 text-sm">{text}</p>
     </motion.a>
   );
 };
 
-
+// --- FloatingLabelInput (Reverted to Light Theme) ---
 const FloatingLabelInput = ({ id, name, type = 'text', label, value, onChange, required, error }) => {
   const [isFocused, setIsFocused] = useState(false);
   const hasValue = value.length > 0;
@@ -212,14 +214,15 @@ const FloatingLabelInput = ({ id, name, type = 'text', label, value, onChange, r
         onFocus={() => setIsFocused(true)}
         onBlur={() => setIsFocused(false)}
         required={required}
-        className={`w-full px-4 py-3 mt-2 text-[#113F67] bg-slate-50 rounded-xl border-2 transition-colors duration-300
-                ${error ? 'border-red-500' : 'border-slate-300 focus:border-[#113F67]'}
-                focus:outline-none focus:ring-2 ${error ? 'focus:ring-red-400' : 'focus:ring-[#113F67]/50'}`}
+        className={`w-full px-4 pt-6 pb-2 text-slate-900 bg-slate-50 rounded-xl border-2 transition-colors duration-300
+          ${error ? 'border-red-500' : 'border-slate-200 focus:border-orange-500'}
+          focus:outline-none focus:ring-2 ${error ? 'focus:ring-red-500/20' : 'focus:ring-orange-500/20'}`}
+        placeholder=" "
       />
       <label
         htmlFor={id}
         className={`absolute left-4 transition-all duration-300 pointer-events-none
-                ${isFocused || hasValue ? 'top-0 text-xs text-[#113F67]' : 'top-5 text-base text-slate-400'}`}
+          ${isFocused || hasValue ? 'top-2 text-xs text-orange-600' : 'top-4 text-base text-slate-400'}`}
       >
         {label}
       </label>
@@ -239,8 +242,6 @@ const FloatingLabelInput = ({ id, name, type = 'text', label, value, onChange, r
   );
 };
 
-// --- Main Connect Component ---
-
 const Connect = () => {
   const [formData, setFormData] = useState({
     firstName: '',
@@ -250,6 +251,7 @@ const Connect = () => {
   });
   const [errors, setErrors] = useState({});
   const [submissionStatus, setSubmissionStatus] = useState(null);
+  const pageWrapperRef = useRef(null);
 
   const SCRIPT_URL = import.meta.env.VITE_CONNECT_FORM_SCRIPT_URL;
 
@@ -258,7 +260,7 @@ const Connect = () => {
     whatsapp: 'https://chat.whatsapp.com/KuhAdgzCJn9EOxNmuBofne?mode=r_t',
     instagram: 'devopsclub_apsit',
     address: 'Thane, Ghodbunder Road, Kasarvadavali',
-    mapsLink: 'http://googleusercontent.com/maps.google.com/3' // Example link
+    mapsLink: 'http://googleusercontent.com/maps.google.com/3'
   };
 
   const validate = () => {
@@ -313,15 +315,13 @@ const Connect = () => {
   };
 
   return (
-    <div className="relative font-sans min-h-screen overflow-x-hidden">
-      <NetworkBackground />
+    <div ref={pageWrapperRef} className="relative font-sans min-h-screen overflow-x-hidden">
+      <NetworkBackground containerRef={pageWrapperRef} />
 
-      {/* ### START OF HERO SECTION CHANGES ### */}
-      {/* h-[50vh] ko hata kar py-* (padding) use kiya hai */}
       <div className="relative flex items-center justify-center text-center py-24 sm:py-32">
         <div className="relative px-6 max-w-4xl">
           <motion.h1
-            className="text-5xl md:text-6xl font-extrabold text-[#113F67] tracking-tight drop-shadow-lg"
+            className="text-6xl md:text-8xl font-black tracking-tighter text-transparent bg-clip-text bg-gradient-to-r from-orange-300 to-slate-400 drop-shadow-lg"
             initial={{ opacity: 0, y: -50 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.3 }}
@@ -338,27 +338,25 @@ const Connect = () => {
           </motion.p>
         </div>
       </div>
-      {/* ### END OF HERO SECTION CHANGES ### */}
 
-      {/* ### START OF MAIN SECTION CHANGES ### */}
-      {/* py-* (padding top/bottom) ko pb-* (padding bottom only) kiya hai */}
       <main className="relative max-w-7xl mx-auto pb-16 sm:pb-24 px-4 sm:px-6 lg:px-8">
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-16 lg:gap-24 items-start">
+        {/* MODIFICATION: Removed `items-start` to allow grid items to stretch to equal height */}
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
 
-          {/* Left Column: Contact Information */}
           <AnimatedSection>
-            <div>
-              <h2 className="text-3xl font-extrabold text-[#113F67] mb-8">Get In Touch</h2>
+            {/* --- Container added behind "Get In Touch" cards --- */}
+            <div className="bg-slate-500 p-8 sm:p-10 rounded-3xl shadow-xl h-full">
+              <h2 className="text-3xl font-extrabold text-orange-400 mb-8">Get In Touch</h2>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
                 <ContactCard
-                  icon={<Mail className="w-7 h-7 text-[#113F67] group-hover:text-white transition-colors" />}
+                  icon={<Mail className="w-7 h-7 text-orange-500 group-hover:text-white transition-colors" />}
                   title="Email Us"
                   text={contactDetails.email}
                   href={`mailto:${contactDetails.email}`}
                   delay={0.1}
                 />
                 <ContactCard
-                  icon={<Phone className="w-7 h-7 text-green-700 group-hover:text-white transition-colors" />}
+                  icon={<FaWhatsapp className="w-7 h-7 text-green-500 group-hover:text-white transition-colors" />}
                   title="WhatsApp"
                   text="Join our group"
                   href={contactDetails.whatsapp}
@@ -366,7 +364,7 @@ const Connect = () => {
                   delay={0.2}
                 />
                 <ContactCard
-                  icon={<Instagram className="w-7 h-7 text-pink-700 group-hover:text-white transition-colors" />}
+                  icon={<Instagram className="w-7 h-7 text-pink-500 group-hover:text-white transition-colors" />}
                   title="Instagram"
                   text={`@${contactDetails.instagram}`}
                   href={`https://instagram.com/${contactDetails.instagram}`}
@@ -374,7 +372,7 @@ const Connect = () => {
                   delay={0.3}
                 />
                 <ContactCard
-                  icon={<MapPin className="w-7 h-7 text-slate-600 group-hover:text-white transition-colors" />}
+                  icon={<MapPin className="w-7 h-7 text-slate-500 group-hover:text-white transition-colors" />}
                   title="Our Location"
                   text={contactDetails.address}
                   href={contactDetails.mapsLink}
@@ -385,11 +383,11 @@ const Connect = () => {
             </div>
           </AnimatedSection>
 
-          {/* Right Column: Contact Form */}
           <AnimatedSection delay={0.2}>
-            <div className="bg-white/80 backdrop-blur-sm p-8 sm:p-10 rounded-3xl shadow-2xl">
-              <h2 className="text-3xl font-extrabold text-[#113F67] mb-2">Send a Message</h2>
-              <p className="text-slate-600 mb-10 text-lg">Have a specific question? Fill out the form below.</p>
+            {/* --- Contact Form reverted to Light Theme --- */}
+            <div className="bg-slate-500 p-8 sm:p-10 rounded-3xl shadow-xl border border-slate-200">
+              <h2 className="text-3xl font-extrabold text-orange-400 mb-2">Send a Message</h2>
+              <p className="text-slate-300 mb-10 text-lg">Have a specific question? Fill out the form below.</p>
 
               <form onSubmit={handleSubmit} className="space-y-6">
                 <div className="grid grid-cols-1 sm:grid-cols-2 gap-6">
@@ -397,29 +395,33 @@ const Connect = () => {
                   <FloatingLabelInput id="lastName" name="lastName" label="Last Name" value={formData.lastName} onChange={handleInputChange} required error={errors.lastName} />
                 </div>
                 <FloatingLabelInput id="email" name="email" type="email" label="Email Address" value={formData.email} onChange={handleInputChange} required error={errors.email} />
-                <div>
-                  <label htmlFor="message" className="sr-only">Message</label>
+                <div className="relative">
                   <textarea id="message" name="message" rows={5} value={formData.message} onChange={handleInputChange} required
-                    className={`w-full px-4 py-3 mt-2 text-[#113F67] bg-slate-50 rounded-xl border-2 transition-colors duration-300 resize-none
-                            ${errors.message ? 'border-red-500' : 'border-slate-300 focus:border-[#113F67]'}
-                            focus:outline-none focus:ring-2 ${errors.message ? 'focus:ring-red-400' : 'focus:ring-[#113F67]/50'}`}
-                    placeholder="Write your message here..."
+                    className={`w-full px-4 pt-6 pb-2 text-slate-900 bg-slate-50 rounded-xl border-2 transition-colors duration-300 resize-none
+                      ${errors.message ? 'border-red-500' : 'border-slate-200 focus:border-orange-500'}
+                      focus:outline-none focus:ring-2 ${errors.message ? 'focus:ring-red-500/20' : 'focus:ring-orange-500/20'}`}
+                    placeholder=" "
                   ></textarea>
+                  <label htmlFor="message"
+                    className={`absolute left-4 transition-all duration-300 pointer-events-none
+                      ${formData.message.length > 0 ? 'top-2 text-xs text-orange-600' : 'top-4 text-base text-slate-400'}`}
+                  >
+                    Your Message
+                  </label>
                   {errors.message && <p className="text-xs text-red-600 mt-1">{errors.message}</p>}
                 </div>
                 
                 <motion.button
                   type="submit"
                   disabled={submissionStatus === 'submitting'}
-                  className="w-full flex justify-center items-center gap-3 py-3 rounded-xl text-[#113F67] font-semibold border-2 border-[#113F67] transition-colors duration-300 hover:bg-[#113F67]/10 disabled:opacity-50 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-[#113F67]/40"
-                  whileHover={{ scale: 1.05 }}
+                  className="w-full flex justify-center items-center gap-3 py-4 rounded-xl text-white font-semibold bg-orange-400 shadow-lg shadow-orange-500/30 transition-all duration-300 hover:bg-orange-600 hover:-translate-y-1 disabled:opacity-60 disabled:cursor-not-allowed focus:outline-none focus:ring-4 focus:ring-orange-500/50"
                   whileTap={{ scale: 0.98 }}
                 >
                   <AnimatePresence mode="wait">
                     {submissionStatus === 'submitting' ? (
-                      <motion.div key="loader" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}><Loader className="animate-spin w-6 h-6" /></motion.div>
+                      <motion.div key="loader" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><Loader className="animate-spin w-6 h-6" /></motion.div>
                     ) : (
-                      <motion.div key="icon" initial={{ opacity: 0, y: -10 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0, y: 10 }}><Send className="w-6 h-6" /></motion.div>
+                      <motion.div key="icon" initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }}><Send className="w-6 h-6" /></motion.div>
                     )}
                   </AnimatePresence>
                   <span>
@@ -446,7 +448,6 @@ const Connect = () => {
           </AnimatedSection>
         </div>
       </main>
-      {/* ### END OF MAIN SECTION CHANGES ### */}
     </div>
   );
 };

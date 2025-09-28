@@ -354,7 +354,7 @@ const EventManager = () => {
         if (window.confirm(`Are you sure you want to delete the event: "${event.name}"?`)) {
             try {
                 await deleteDoc(doc(db, "events", event.id));
-                alert("Event deleted successfully from Firestore.");
+                alert("Event deleted successfully.");
             } catch (error) {
                 console.error("Error deleting event: ", error);
                 alert("Failed to delete event. Check console for details.");
