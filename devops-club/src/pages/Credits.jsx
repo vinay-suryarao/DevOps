@@ -6,7 +6,7 @@ import mentorImg from '../assets/vishal.png';
 import vinayImg from '../assets/Technical_Vinay.png';
 import deepImg from '../assets/Deep.png';
 import rumizaImg from '../assets/Rumiza.png';
-import avishaImg from '../assets/Avisha.jpeg';
+import Technicalcohead_Ismaeel from '../assets/Technicalcohead_Ismaeel.png';
 
 // Reusable card component with the new design
 const ProfileCard = ({ name, role, imageUrl, githubUrl, linkedinUrl }) => {
@@ -72,13 +72,6 @@ export default function Credits() {
       linkedinUrl: 'https://www.linkedin.com/in/vinay-suryarao/',
     },
     {
-      name: 'Deep Varkute',
-      role: 'Core Member',
-      imageUrl: deepImg,
-      githubUrl: 'https://github.com/Deep-0491',
-      linkedinUrl: 'https://www.linkedin.com/in/deep-varkute-b59a49374/',
-    },
-    {
       name: 'Sayyeda Rumiza',
       role: 'Core Member',
       imageUrl: rumizaImg,
@@ -86,11 +79,18 @@ export default function Credits() {
       linkedinUrl: 'https://www.linkedin.com/in/sayyeda-rumiza-0b08b727a/',
     },
     {
-      name: 'Avisha Varkute',
+      name: 'Deep Varkute',
       role: 'Core Member',
-      imageUrl: avishaImg,
-      githubUrl: 'https://github.com/avisha78',
-      linkedinUrl: 'https://www.linkedin.com/in/avisha-varkute-2b1764335',
+      imageUrl: deepImg,
+      githubUrl: 'https://github.com/Deep-0491',
+      linkedinUrl: 'https://www.linkedin.com/in/deep-varkute-b59a49374/',
+    },
+    {
+      name: 'Isameel Shaikh',
+      role: 'Core Member',
+      imageUrl: Technicalcohead_Ismaeel,
+      githubUrl: 'https://github.com/ismaeeeelshaikh',
+      linkedinUrl: 'http://www.linkedin.com/in/ismaeel-shaikh-04a141286',
     },
   ];
 

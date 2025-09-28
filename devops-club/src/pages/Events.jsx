@@ -1,9 +1,10 @@
 /* eslint-disable no-irregular-whitespace */
 /* eslint-disable no-unused-vars */
-import React, { useState, useRef, useEffect, useMemo } from 'react';
+import {React, useState, useRef, useEffect, useMemo } from 'react';
 import { collection, getDocs, query, orderBy } from "firebase/firestore";
 import { db } from '../firebaseConfig'; // Make sure this path is correct
-import { Calendar, Clock, MapPin, Globe, X, ArrowLeft, Download, Search, Filter, UserCheck } from 'lucide-react';
+// Filter icon hata diya gaya hai
+import { Calendar, Clock, MapPin, Globe, X, ArrowLeft, Download, Search, UserCheck } from 'lucide-react';
 
 // --- Helper Components & Constants ---
 const UserIcon = () => (
@@ -19,92 +20,34 @@ const departments = [
     "Select Your Department", "Information Technology", "Computer Engineering", "Data Science Engineering", "Mechanical Engineering", "Civil Engineering", "AI/ML Engineering"
 ];
 
-// --- Filter Component (YAHAN LAYOUT FINAL CHANGE KIYA GAYA HAI) ---
-const FilterControls = ({ tempFilters, onTempFilterChange, onApply, onClear, onFeedbackClick }) => {
-    const [isFilterOpen, setIsFilterOpen] = useState(false);
-    const filterRef = useRef(null);
-
-    useEffect(() => {
-        function handleClickOutside(event) {
-            if (filterRef.current && !filterRef.current.contains(event.target)) {
-                setIsFilterOpen(false);
-            }
-        }
-        document.addEventListener("mousedown", handleClickOutside);
-        return () => {
-            document.removeEventListener("mousedown", handleClickOutside);
-        };
-    }, [filterRef]);
-
-    const handleApply = () => {
-        onApply();
-        setIsFilterOpen(false);
-    }
-
-    const handleClear = () => {
-        onClear();
-        setIsFilterOpen(false);
-    }
+// --- Search Bar Component (Filter Hata Diya Gaya Hai) ---
+const FilterControls = ({ tempFilters, onTempFilterChange, onApply, onFeedbackClick }) => {
 
     const handleSearchKeyDown = (e) => {
         if (e.key === 'Enter') {
             e.preventDefault();
             onApply();
-            setIsFilterOpen(false);
         }
     };
 
     return (
         <div className="w-full max-w-4xl mx-auto mb-12 z-30 flex items-center justify-center gap-x-3 sm:gap-x-4">
-            {/* Search bar with filter button inside */}
+            {/* Ab sirf search bar hai */}
             <div className="relative flex-grow">
                 <Search className="absolute left-5 top-1/2 -translate-y-1/2 w-5 h-5 text-slate-400 pointer-events-none" />
                 <input
                     type="text"
                     id="search"
                     name="search"
-                    placeholder="Search for events..."
+                    placeholder="Search for events and press Enter..."
                     value={tempFilters.search}
                     onChange={onTempFilterChange}
                     onKeyDown={handleSearchKeyDown}
-                    className="w-full bg-white/90 rounded-full shadow-lg pl-12 pr-16 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
+                    className="w-full bg-white/90 rounded-full shadow-lg pl-12 pr-4 py-3 text-slate-800 focus:outline-none focus:ring-2 focus:ring-blue-500"
                 />
-                <div className="absolute right-1.5 top-1/2 -translate-y-1/2">
-                    <div className="relative" ref={filterRef}>
-                        <button
-                            onClick={() => setIsFilterOpen(!isFilterOpen)}
-                            className="flex items-center justify-center w-11 h-11 bg-blue-500 text-white rounded-full hover:bg-blue-600 transition-colors"
-                            title="Filter Events"
-                        >
-                            <Filter size={20} />
-                        </button>
-                        {isFilterOpen && (
-                            <div className="absolute top-full right-0 mt-2 w-72 bg-white rounded-xl shadow-2xl p-4 z-20">
-                                <h4 className="font-bold text-slate-800 mb-4 text-left">Filter Events</h4>
-                                <div className="space-y-4">
-                                    <div>
-                                        <label htmlFor="date-filter" className="block text-sm font-medium text-slate-700 mb-1 text-left">Specific Date</label>
-                                        <input
-                                            type="date"
-                                            id="date-filter"
-                                            name="date"
-                                            value={tempFilters.date}
-                                            onChange={onTempFilterChange}
-                                            className="w-full px-3 py-2 bg-white border border-slate-300 rounded-md shadow-sm focus:outline-none focus:ring-blue-500 focus:border-blue-500 transition"
-                                        />
-                                    </div>
-                                </div>
-                                <div className="flex justify-between items-center mt-6">
-                                    <button onClick={handleClear} className="text-sm font-semibold text-slate-500 hover:text-slate-800">Clear All</button>
-                                    <button onClick={handleApply} className="bg-blue-500 text-white font-bold py-2 px-5 rounded-full hover:bg-blue-600 transition-colors duration-300">Apply Filters</button>
-                                </div>
-                            </div>
-                        )}
-                    </div>
-                </div>
             </div>
 
-            {/* Feedback button ab search bar ke bahar hai */}
+            {/* Feedback button */}
             <button
                 onClick={onFeedbackClick}
                 className="flex-shrink-0 flex items-center justify-center px-5 h-[50px] bg-orange-500 text-white rounded-full font-semibold text-sm hover:bg-orange-600 transition-colors shadow-lg"
@@ -277,7 +220,7 @@ const MainEventsView = ({ upcomingEvents, pastEvents, onRegister, onViewMore, to
     </>
 );
 
-// --- Parent Component --- (No Changes to logic)
+// --- Parent Component ---
 export default function Events() {
     const [allEvents, setAllEvents] = useState([]);
     const [loading, setLoading] = useState(true);
@@ -286,7 +229,8 @@ export default function Events() {
     const [viewingPastEvent, setViewingPastEvent] = useState(null);
     const [isFeedbackFormOpen, setIsFeedbackFormOpen] = useState(false);
     
-    const initialFilters = { search: '', date: '' };
+    // Filter logic ab simplified hai
+    const initialFilters = { search: '' };
     const [activeFilters, setActiveFilters] = useState(initialFilters);
     const [tempFilters, setTempFilters] = useState(initialFilters);
 
@@ -312,16 +256,10 @@ export default function Events() {
         }
     }, [viewingPastEvent]);
     
+    // Filtering logic ab sirf search par depend karta hai
     const filteredEvents = useMemo(() => {
         return allEvents.filter(event => {
-            const nameMatch = event.name.toLowerCase().includes(activeFilters.search.toLowerCase());
-            const filterDate = activeFilters.date ? new Date(activeFilters.date) : null;
-            if (filterDate) {
-                const userTimezoneOffset = filterDate.getTimezoneOffset() * 60000;
-                filterDate.setTime(filterDate.getTime() + userTimezoneOffset);
-            }
-            const dateMatch = !filterDate || (new Date(event.date).toDateString() === filterDate.toDateString());
-            return nameMatch && dateMatch;
+            return event.name.toLowerCase().includes(activeFilters.search.toLowerCase());
         });
     }, [allEvents, activeFilters]);
 
@@ -332,11 +270,6 @@ export default function Events() {
 
     const handleApplyFilters = () => {
         setActiveFilters(tempFilters);
-    };
-
-    const handleClearFilters = () => {
-        setTempFilters(initialFilters);
-        setActiveFilters(initialFilters);
     };
 
     const handleRegisterClick = (event) => { setSelectedEvent(event); setIsFormOpen(true); };
@@ -367,7 +300,6 @@ export default function Events() {
                     tempFilters={tempFilters}
                     onTempFilterChange={handleTempFilterChange}
                     onApply={handleApplyFilters}
-                    onClear={handleClearFilters}
                     onFeedbackClick={handleOpenFeedbackForm}
                 />
                 <MainEventsView
