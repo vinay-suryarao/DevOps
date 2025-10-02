@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-irregular-whitespace */
-// 1. useRef ko import karein
-import React, { useRef, useEffect, useState } from "react";
+import React, { useRef, useEffect } from "react";
+import { Link } from "react-router-dom"; // <<< 1. YAHAN LINK IMPORT KIYA GAYA HAI
 import {
   FaShieldAlt,
   FaUniversity,
@@ -19,153 +19,153 @@ import sonalImg from "../assets/sonal.png";
 import vishalImg from "../assets/vishal.png";
 import sujataImg from "../assets/sujata.jpg";
 
-// Red Hat event images
-import redhat1 from "../assets/redhat1.jpg";
-import redhat2 from "../assets/redhat2.jpg";
-import redhat3 from "../assets/redhat3.jpg";
-import redhat4 from "../assets/redhat4.jpg";
-import redhat5 from "../assets/redhat5.jpg";
-import redhat6 from "../assets/redhat6.jpg";
-import redhat7 from "../assets/redhat7.jpg";
-import redhat8 from "../assets/redhat8.jpg";
-import redhat9 from "../assets/redhat9.jpg";
-import redhat10 from "../assets/redhat10.jpg";
-import redhat11 from "../assets/redhat11.jpg";
-import redhat12 from "../assets/redhat12.jpg";
-
 // Logo imports
 import redHatLogoHat from "../assets/redhat.png";
 import redHatAcademyLogo from "../assets/redhat-academy-logo.jpg";
+import premiumpartner from "../assets/premium-partner.jpg";
 
-const redhatEventImages = [
-  redHatAcademyLogo,
-  redhat1, redhat2, redhat3, redhat4, redhat5, redhat6,
-  redhat7, redhat8, redhat9, redhat10, redhat11, redhat12,
-];
-
-// UPDATED BACKGROUND COMPONENT
 const NetworkBackground = ({ containerRef }) => {
-    const canvasRef = useRef(null);
-  
-    useEffect(() => {
-      const canvas = canvasRef.current;
-      if (!canvas) return;
-      const ctx = canvas.getContext("2d");
-      let animationFrameId;
-      let particlesArray;
-  
-      const setCanvasDimensions = () => {
-        if (!containerRef.current) return;
-  
-        const dpr = window.devicePixelRatio || 1;
-        const containerHeight = containerRef.current.scrollHeight;
-        
-        canvas.style.width = "100%";
-        canvas.style.height = `${containerHeight}px`;
-        canvas.width = canvas.offsetWidth * dpr;
-        canvas.height = containerHeight * dpr;
-        ctx.scale(dpr, dpr);
-      };
-  
-      class Particle {
-          constructor(x, y, directionX, directionY, size, color) {
-              this.x = x; this.y = y; this.directionX = directionX;
-              this.directionY = directionY; this.size = size; this.color = color;
-          }
-          draw() {
-              ctx.beginPath();
-              ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
-              ctx.fillStyle = this.color;
-              ctx.fill();
-          }
-          update() {
-              const scaledWidth = canvas.offsetWidth;
-              const scaledHeight = canvas.offsetHeight / (window.devicePixelRatio || 1);
-              if (this.x > scaledWidth + 100 || this.x < -100) this.directionX = -this.directionX;
-              if (this.y > scaledHeight + 100 || this.y < -100) this.directionY = -this.directionY;
-              this.x += this.directionX; this.y += this.directionY;
-              this.draw();
-          }
+  const canvasRef = useRef(null);
+
+  useEffect(() => {
+    const canvas = canvasRef.current;
+    if (!canvas) return;
+    const ctx = canvas.getContext("2d");
+    let animationFrameId;
+    let particlesArray;
+
+    const setCanvasDimensions = () => {
+      if (!containerRef.current) return;
+
+      const dpr = window.devicePixelRatio || 1;
+      const containerHeight = containerRef.current.scrollHeight;
+
+      canvas.style.width = "100%";
+      canvas.style.height = `${containerHeight}px`;
+      canvas.width = canvas.offsetWidth * dpr;
+      canvas.height = containerHeight * dpr;
+      ctx.scale(dpr, dpr);
+    };
+
+    class Particle {
+      constructor(x, y, directionX, directionY, size, color) {
+        this.x = x;
+        this.y = y;
+        this.directionX = directionX;
+        this.directionY = directionY;
+        this.size = size;
+        this.color = color;
       }
-  
-      function init() {
-          particlesArray = [];
-          let numberOfParticles = (canvas.width * canvas.height) / (20000 * (window.devicePixelRatio || 1)**2);
-          const colors = ['#f97316', '#3b82f6'];
-          
-          for (let i = 0; i < numberOfParticles; i++) {
-              let size = (Math.random() * 2.5) + 1.5; 
-              let x = (Math.random() * (canvas.offsetWidth + 200)) - 100;
-              let y = (Math.random() * (canvas.offsetHeight / (window.devicePixelRatio || 1) + 200)) - 100;
-              let directionX = (Math.random() * .3) - .15;
-              let directionY = (Math.random() * .3) - .15;
-              let color = colors[Math.floor(Math.random() * colors.length)];
-              particlesArray.push(new Particle(x, y, directionX, directionY, size, color));
+      draw() {
+        ctx.beginPath();
+        ctx.arc(this.x, this.y, this.size, 0, Math.PI * 2, false);
+        ctx.fillStyle = this.color;
+        ctx.fill();
+      }
+      update() {
+        const scaledWidth = canvas.offsetWidth;
+        const scaledHeight = canvas.offsetHeight / (window.devicePixelRatio || 1);
+        if (this.x > scaledWidth + 100 || this.x < -100)
+          this.directionX = -this.directionX;
+        if (this.y > scaledHeight + 100 || this.y < -100)
+          this.directionY = -this.directionY;
+        this.x += this.directionX;
+        this.y += this.directionY;
+        this.draw();
+      }
+    }
+
+    function init() {
+      particlesArray = [];
+      let numberOfParticles =
+        (canvas.width * canvas.height) / (20000 * (window.devicePixelRatio || 1) ** 2);
+      const colors = ["#f97316", "#3b82f6"];
+
+      for (let i = 0; i < numberOfParticles; i++) {
+        let size = Math.random() * 2.5 + 1.5;
+        let x = Math.random() * (canvas.offsetWidth + 200) - 100;
+        let y =
+          Math.random() * (canvas.offsetHeight / (window.devicePixelRatio || 1) + 200) -
+          100;
+        let directionX = Math.random() * 0.3 - 0.15;
+        let directionY = Math.random() * 0.3 - 0.15;
+        let color = colors[Math.floor(Math.random() * colors.length)];
+        particlesArray.push(
+          new Particle(x, y, directionX, directionY, size, color)
+        );
+      }
+    }
+
+    function connect() {
+      let opacityValue = 1;
+      const scaledWidth = canvas.offsetWidth;
+      const scaledHeight = canvas.offsetHeight / (window.devicePixelRatio || 1);
+      for (let a = 0; a < particlesArray.length; a++) {
+        for (let b = a; b < particlesArray.length; b++) {
+          let distance =
+            (particlesArray[a].x - particlesArray[b].x) ** 2 +
+            (particlesArray[a].y - particlesArray[b].y) ** 2;
+          if (distance < (scaledWidth / 9) * (scaledHeight / 9)) {
+            opacityValue = 1 - distance / 22000;
+            ctx.strokeStyle = `rgba(42, 63, 84, ${opacityValue})`;
+            ctx.lineWidth = 1;
+            ctx.beginPath();
+            ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
+            ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
+            ctx.stroke();
           }
+        }
       }
-  
-      function connect() {
-          let opacityValue = 1;
-          const scaledWidth = canvas.offsetWidth;
-          const scaledHeight = canvas.offsetHeight / (window.devicePixelRatio || 1);
-          for (let a = 0; a < particlesArray.length; a++) {
-              for (let b = a; b < particlesArray.length; b++) {
-                  let distance = ((particlesArray[a].x - particlesArray[b].x) ** 2) + ((particlesArray[a].y - particlesArray[b].y) ** 2);
-                  if (distance < (scaledWidth / 9) * (scaledHeight / 9)) {
-                      opacityValue = 1 - (distance / 22000);
-                      ctx.strokeStyle = `rgba(42, 63, 84, ${opacityValue})`; 
-                      ctx.lineWidth = 1;
-                      ctx.beginPath();
-                      ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
-                      ctx.lineTo(particlesArray[b].x, particlesArray[b].y);
-                      ctx.stroke();
-                  }
-              }
-          }
-      }
-  
-      function animate(timestamp) {
-          if(!ctx || !particlesArray) return;
-          ctx.clearRect(0, 0, canvas.width, canvas.height); 
-          
-          const driftX = Math.sin(timestamp / 8000) * 50;
-          const driftY = Math.cos(timestamp / 8000) * 30;
-          
-          ctx.save();
-          ctx.translate(driftX, driftY);
-          particlesArray.forEach(p => p.update());
-          connect();
-          ctx.restore();
-          
-          animationFrameId = window.requestAnimationFrame(animate);
-      }
-  
+    }
+
+    function animate(timestamp) {
+      if (!ctx || !particlesArray) return;
+      ctx.clearRect(0, 0, canvas.width, canvas.height);
+
+      const driftX = Math.sin(timestamp / 8000) * 50;
+      const driftY = Math.cos(timestamp / 8000) * 30;
+
+      ctx.save();
+      ctx.translate(driftX, driftY);
+      particlesArray.forEach((p) => p.update());
+      connect();
+      ctx.restore();
+
+      animationFrameId = window.requestAnimationFrame(animate);
+    }
+
+    setCanvasDimensions();
+    init();
+    animate(0);
+
+    const handleResize = () => {
+      window.cancelAnimationFrame(animationFrameId);
       setCanvasDimensions();
       init();
       animate(0);
-      
-      const handleResize = () => { 
-          window.cancelAnimationFrame(animationFrameId);
-          setCanvasDimensions(); 
-          init();
-          animate(0);
-      };
-  
-      const resizeObserver = new ResizeObserver(handleResize);
-      if (containerRef.current) {
-        resizeObserver.observe(containerRef.current);
-      }
-      
-      window.addEventListener('resize', handleResize);
-  
-      return () => {
-          window.cancelAnimationFrame(animationFrameId);
-          window.removeEventListener('resize', handleResize);
-          resizeObserver.disconnect();
-      };
-    }, [containerRef]);
-  
-    return <canvas ref={canvasRef} className="absolute inset-0 z-0 w-full bg-slate-100" style={{ display: 'block' }} />;
+    };
+
+    const resizeObserver = new ResizeObserver(handleResize);
+    if (containerRef.current) {
+      resizeObserver.observe(containerRef.current);
+    }
+
+    window.addEventListener("resize", handleResize);
+
+    return () => {
+      window.cancelAnimationFrame(animationFrameId);
+      window.removeEventListener("resize", handleResize);
+      resizeObserver.disconnect();
+    };
+  }, [containerRef]);
+
+  return (
+    <canvas
+      ref={canvasRef}
+      className="absolute inset-0 z-0 w-full bg-slate-100"
+      style={{ display: "block" }}
+    />
+  );
 };
 
 const services = [
@@ -184,7 +184,11 @@ const coordinators = [
     name: "Prof. Sonal Jain",
     role: "Assistant Professor at APSIT",
     image: sonalImg,
-    skills: ["RHCSA","Google Certified Educator","Certified Instructor @ Red Hat Academy"],
+    skills: [
+      "RHCSA",
+      "Google Certified Educator",
+      "Certified Instructor @ Red Hat Academy",
+    ],
     linkedinUrl: "https://www.linkedin.com/in/sonal-jain-65235927a/",
   },
   {
@@ -199,8 +203,11 @@ const coordinators = [
     role: "Assistant Professor at APSIT",
     image: sujataImg,
     skills: [
-      "Git & GitHub", "Software Engineering", "Software Development",
-      "CI/CD", "Kubernetes",
+      "Git & GitHub",
+      "Software Engineering",
+      "Software Development",
+      "CI/CD",
+      "Kubernetes",
     ],
     linkedinUrl: "https://www.linkedin.com/in/sujata-oak-a887601a9/",
   },
@@ -208,21 +215,24 @@ const coordinators = [
 
 const events = [
   {
-    videoSrc: "https://res.cloudinary.com/dfzlwhsia/video/upload/v1758978245/Sonal_Jain_2_ccod7q.mp4",
+    videoSrc:
+      "https://res.cloudinary.com/dfzlwhsia/video/upload/v1758978245/Sonal_Jain_2_ccod7q.mp4",
     title: "What is DevOps ?",
     description:
       "DevOps is a combination of development and operations practices that aims to shorten the software development lifecycle and deliver high-quality software faster. It emphasizes automation, collaboration, and continuous integration and delivery (CI/CD) to ensure efficient, reliable, and scalable software deployment.",
     position: "left",
   },
   {
-    videoSrc: "https://res.cloudinary.com/dfzlwhsia/video/upload/v1758978729/Sujata_Mam_2_mrj6gv.mp4",
+    videoSrc:
+      "https://res.cloudinary.com/dfzlwhsia/video/upload/v1758978729/Sujata_Mam_2_mrj6gv.mp4",
     title: "Basics of DevOps",
     description:
       "At its core, DevOps represents a modern approach to software delivery that integrates people, processes, and tools. It focuses on continuous improvement, automation of repetitive tasks, and bridging the gap between development and operations teams to enhance productivity and efficiency.",
     position: "right",
   },
   {
-    videoSrc: "https://res.cloudinary.com/dfzlwhsia/video/upload/v1758978962/Vishal_Sir_nhdnqj.mp4",
+    videoSrc:
+      "https://res.cloudinary.com/dfzlwhsia/video/upload/v1758978962/Vishal_Sir_nhdnqj.mp4",
     title: "Why to choose DevOps ?",
     description:
       "Adopting DevOps empowers organizations to accelerate software delivery, improve collaboration, and achieve higher reliability. It ensures faster releases, reduced errors, and greater customer satisfaction by automating processes and promoting a culture of shared responsibility.",
@@ -243,7 +253,11 @@ const staggerContainer = {
 
 const fadeInTo25 = {
   hidden: { y: 20, opacity: 0 },
-  show: { y: 0, opacity: 0.25, transition: { duration: 0.6, ease: "easeOut" } },
+  show: {
+    y: 0,
+    opacity: 0.25,
+    transition: { duration: 0.6, ease: "easeOut" },
+  },
 };
 
 const fadeInUp = {
@@ -280,7 +294,9 @@ const CoordinatorCard = ({ coordinator }) => (
                 className="w-full h-full rounded-full object-cover"
               />
             </div>
-            <h3 className="text-2xl font-bold text-white">{coordinator.name}</h3>
+            <h3 className="text-2xl font-bold text-white">
+              {coordinator.name}
+            </h3>
             <p className="text-sky-300">{coordinator.role}</p>
           </div>
         </div>
@@ -362,38 +378,10 @@ const EventRow = ({ videoSrc, title, description, videoPosition }) => {
 };
 
 const Home = () => {
-  const [currentImageIndex, setCurrentImageIndex] = useState(0);
-  // 2. Ref banayein
   const pageWrapperRef = useRef(null);
 
-  const goToPreviousImage = () => {
-    const isFirstImage = currentImageIndex === 0;
-    const newIndex = isFirstImage
-      ? redhatEventImages.length - 1
-      : currentImageIndex - 1;
-    setCurrentImageIndex(newIndex);
-  };
-
-  const goToNextImage = () => {
-    const isLastImage = currentImageIndex === redhatEventImages.length - 1;
-    const newIndex = isLastImage ? 0 : currentImageIndex + 1;
-    setCurrentImageIndex(newIndex);
-  };
-
-  useEffect(() => {
-    const timer = setInterval(() => {
-      setCurrentImageIndex(prevIndex =>
-        prevIndex === redhatEventImages.length - 1 ? 0 : prevIndex + 1
-      );
-    }, 2000); 
-    return () => clearInterval(timer);
-  }, []); 
-
   return (
-    // 3. Ref ko div se attach karein
     <div ref={pageWrapperRef} className="relative font-sans">
-      
-      {/* 4. Ref ko prop ke zariye pass karein */}
       <NetworkBackground containerRef={pageWrapperRef} />
 
       {/* Hero Section */}
@@ -403,7 +391,9 @@ const Home = () => {
           loop
           muted
           className="absolute top-0 left-0 w-full h-full object-cover z-0"
-          src={"https://res.cloudinary.com/dfzlwhsia/video/upload/v1758979456/video_xrjzqm.mp4"}
+          src={
+            "https://res.cloudinary.com/dfzlwhsia/video/upload/v1758979456/video_xrjzqm.mp4"
+          }
         />
         <div className="absolute top-0 left-0 w-full h-full bg-black/60 z-10" />
         <motion.div
@@ -456,46 +446,55 @@ const Home = () => {
           >
             <div className="flex justify-center items-center gap-x-4 mb-8">
               <h2 className="text-4xl font-extrabold text-center text-slate-800 drop-shadow-[0_2px_2px_rgba(0,0,0,0.1)]">
-                Our Collaboration with Red Hat Academy
+                APSIT Red Hat Academy
               </h2>
-              <img src={redHatLogoHat} alt="Red Hat Logo" className="h-12 w-auto" />
+              <img
+                src={redHatLogoHat}
+                alt="Red Hat Logo"
+                className="h-12 w-auto"
+              />
             </div>
 
             <div className="flex flex-col lg:flex-row items-center gap-8">
-              <div className="w-full lg:w-1/2">
-                <div className="relative rounded-xl shadow-lg border-2 border-slate-300/50 overflow-hidden">
-                  <img
-                    src={redhatEventImages[currentImageIndex]}
-                    alt={`Red Hat Event Slide ${currentImageIndex + 1}`}
-                    className="object-cover aspect-video w-full"
-                  />
-                  <button
-                    onClick={goToPreviousImage}
-                    className="absolute top-1/2 left-3 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full hover:bg-black/60 transition-colors focus:outline-none focus:ring-2 focus:ring-white"
-                    aria-label="Previous Image"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 19l-7-7 7-7" />
-                    </svg>
-                  </button>
-                  <button
-                    onClick={goToNextImage}
-                    className="absolute top-1/2 right-3 -translate-y-1/2 bg-black/40 text-white p-2 rounded-full hover:bg-black/60 transition-colors focus:outline-none focus:ring-2 focus:ring-white"
-                    aria-label="Next Image"
-                  >
-                    <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-                    </svg>
-                  </button>
-                </div>
+              <div className="w-full lg:w-1/2 flex justify-center items-center">
+                <img
+                  src={premiumpartner}
+                  alt="APSIT Red Hat Academy Certificate"
+                  className="rounded-xl shadow-lg border-2 border-slate-300/50 object-contain max-h-[400px]"
+                />
               </div>
+
               <div className="w-full lg:w-1/2">
                 <p className="text-slate-700 text-lg leading-relaxed mb-4">
-                  <b>Red Hat</b> is the world's leading provider of enterprise open-source solutions, delivering high-performing Linux, cloud, container, and Kubernetes technologies. Their tools, like Ansible and OpenShift, are fundamental to modern DevOps practices.
+                  <b>Red Hat Academy</b> is a global program that connects
+                  industry and academia, helping students build skills in Linux,
+                  cloud, containers, and automation with real-world, hands-on
+                  learning.
+                </p>
+                <p className="text-slate-700 text-lg leading-relaxed mb-4">
+                  In collaboration with the <b>APSIT DevOps Club</b>, this
+                  premium partnership offers workshops, certifications, and
+                  mentorship from Red Hat certified professionals, ensuring
+                  students gain both knowledge and practical expertise.
                 </p>
                 <p className="text-slate-700 text-lg leading-relaxed">
-                  Through our collaboration, the <b>APSIT DevOps Club</b> provides students with an immersive experience, offering hands-on workshops and industry-relevant skills in enterprise Linux, containerization, and automation, guided by Red Hat certified professionals.
+                  Together, <b>Red Hat Academy</b> and{" "}
+                  <b>APSIT DevOps Club</b> prepare students to be future-ready
+                  IT professionals, combining academic excellence with
+                  industry-relevant DevOps and cloud skills.
+                </p><br></br>
+
+                <p className="text-slate-700 text-lg leading-relaxed">
+                  Click the button to know more.
                 </p>
+                <div className="mt-6">
+                  <Link
+                    to="/redhat"
+                    className="inline-block px-6 py-3 bg-orange-500 text-white font-semibold rounded-xl shadow-md hover:bg-orange-600 transition-all"
+                  >
+                    APSIT RHA 
+                  </Link>
+                </div>
               </div>
             </div>
           </motion.div>
@@ -507,13 +506,19 @@ const Home = () => {
         <div className="container mx-auto px-6">
           <div className="text-center">
             <motion.h2
-              variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.5 }}
+              variants={fadeInUp}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.5 }}
               className="text-4xl font-extrabold text-slate-800 mb-12"
             >
               FACULTY COORDINATORS
             </motion.h2>
             <motion.div
-              variants={staggerContainer} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.2 }}
+              variants={staggerContainer}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.2 }}
               className="flex flex-wrap justify-center gap-16"
             >
               {coordinators.map((coord, index) => (
@@ -531,7 +536,10 @@ const Home = () => {
         <div className="container mx-auto px-6">
           <div className="text-center">
             <motion.h2
-              variants={fadeInUp} initial="hidden" whileInView="show" viewport={{ once: true, amount: 0.5 }}
+              variants={fadeInUp}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.5 }}
               className="text-4xl font-extrabold text-slate-800 mb-12"
             >
               Discover DevOps
