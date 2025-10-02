@@ -37,7 +37,6 @@ import Cinematographycohead_Aarya from '../assets/Cinematographycohead_Aarya.png
 import Cinematographycohead_Parth from '../assets/Cinematographycohead_Parth.png';
 import Publicitycohead_Tanushree from '../assets/Publicitycohead_Tanushree.png';
 import Publicitycohead_Shivansh from '../assets/Publicitycohead_Shivansh.png';
-import InternPoster from '../assets/internposter.jpeg';
 
 const CustomStyles = () => (
   <style>{`
@@ -380,11 +379,7 @@ const About = () => {
             </div>
         </div>
 
-        <div className="relative z-10 w-full text-center px-4 sm:px-6 lg:px-8">
-             <h2 className="text-4xl md:text-5xl font-extrabold text-[#2a3f54] drop-shadow-lg mb-4 animate-fade-in-up" style={{animationDelay: '3.3s'}}>Our Club Expertise</h2>
-            <p className="max-w-3xl mx-auto text-slate-600 mb-8 animate-fade-in-up" style={{animationDelay: '3.4s'}}>We focus on hands-on learning with the industry's most essential DevOps tools, preparing our members for real-world challenges.</p>
-            <ToolsSlider />
-        </div>
+
 
         <div className="relative z-10 w-full text-center bg-slate-100/80 backdrop-blur-sm py-16">
             <h2 className="text-4xl md:text-5xl font-extrabold text-[#2a3f54] drop-shadow-lg mb-8 animate-fade-in-up" style={{animationDelay: '3.5s'}}>Meet Our Interns</h2>
@@ -393,20 +388,36 @@ const About = () => {
                 <div className="flex flex-col md:flex-row md:items-stretch gap-12">
                     <div className="md:w-3/5 text-left animate-fade-in-up flex flex-col justify-center" style={{animationDelay: '3.6s'}}>
                         <p className="text-slate-700 text-lg leading-relaxed text-justify mb-4">
-                            The DevOps Club of A. P. Shah Institute of Technology is thrilled to celebrate a significant milestone. We extend our heartiest congratulations to our 15 dedicated students who have successfully completed an impactful internship at RigelX Infotech Private Limited. This collaboration provided an unparalleled opportunity for our members to gain critical hands-on industry experience and apply their skills to solve real-world challenges.
-                        </p>
-                        <p className="text-slate-700 text-lg leading-relaxed text-justify">
-                          We are immensely proud of their hard work, dedication, and professional growth throughout this journey. During the program, they not only sharpened their technical abilities but also mastered the vital skills of teamwork, communication, and collaboration. They have grown from students into young professionals ready for success, and this achievement sets a new standard for our club. We are excited to see them lead the next wave of innovation in the technology industry.
+                            The <b>DevOps Club</b> of A. P. Shah Institute of Technology is thrilled to celebrate a significant milestone. We extend our heartiest congratulations to our 15 dedicated students who have successfully completed an impactful <b>internship at RigelX Infotech Private Limited.</b> This collaboration provided an unparalleled opportunity for our members to gain critical hands-on industry experience and apply their skills to solve real-world challenges. We are immensely proud of their hard work, dedication, and professional growth throughout this journey.
                         </p>
                     </div>
-                    <div className="md:w-2/5 w-full flex justify-center animate-fade-in-up" style={{animationDelay: '3.7s'}}>
-                        <div className="w-full max-w-sm overflow-hidden rounded-lg shadow-md border border-slate-300">
-                            <img src={InternPoster} alt="Internship Poster" className="object-cover w-full h-full" />
+                    <div className="md:w-2/5 w-full flex justify-center items-center animate-fade-in-up" style={{animationDelay: '3.7s'}}>
+                  
+                        {/* ===== CHANGE START ===== */}
+                        <div className="w-full max-w-sm overflow-hidden rounded-lg shadow-md border border-slate-300 aspect-video bg-black">
+                            <video
+                                src="https://res.cloudinary.com/dfzlwhsia/video/upload/v1759401071/1754561660665_mtlgug.mp4"
+                                autoPlay
+                                loop
+                                muted
+                                playsInline
+                                controls 
+                                className="w-full h-full"
+                            >
+                                Your browser does not support the video tag.
+                            </video>
                         </div>
+                        {/* ===== CHANGE END ===== */}
                     </div>
+                    
                 </div>
                 <InternsMarquee />
             </div>
+        </div>
+             <div className="relative z-10 w-full text-center px-4 sm:px-6 lg:px-8">
+             <h2 className="text-4xl md:text-5xl font-extrabold text-[#2a3f54] drop-shadow-lg mb-4 animate-fade-in-up" style={{animationDelay: '3.3s'}}>Our Club Expertise</h2>
+            <p className="max-w-3xl mx-auto text-slate-600 mb-8 animate-fade-in-up" style={{animationDelay: '3.4s'}}>We focus on hands-on learning with the industry's most essential DevOps tools, preparing our members for real-world challenges.</p>
+            <ToolsSlider />
         </div>
       </section>
     </>

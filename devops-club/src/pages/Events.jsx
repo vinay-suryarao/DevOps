@@ -164,7 +164,7 @@ const PastEventDetail = ({ event, onBack }) => (
                     )}
                 </div>
                 <div className="prose max-w-none text-slate-700 mb-12">
-                    <h3 className="text-2xl font-bold text-slate-800 mb-3">Event Brief</h3>
+                    <h3 className="text-2xl font-bold text-slate-800 mb-3">Event Highlights</h3>
                     <p className="text-justify whitespace-pre-wrap">{event.brief}</p>
                 </div>
                 {event.reportUrl && (
