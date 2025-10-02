@@ -1,5 +1,5 @@
 import React, { useState, useRef, useEffect } from 'react';
-import { Binoculars, Rocket, ChevronLeft, ChevronRight, HeartHandshake } from 'lucide-react';
+import { Binoculars, Rocket, HeartHandshake } from 'lucide-react';
 import PresidentShreyash from '../assets/president_shreyash.png';
 import TechnicalVinay from '../assets/Technical_Vinay.png';
 import DesignAkshata from '../assets/Design_Akshata.png';
@@ -37,6 +37,7 @@ import Cinematographycohead_Aarya from '../assets/Cinematographycohead_Aarya.png
 import Cinematographycohead_Parth from '../assets/Cinematographycohead_Parth.png';
 import Publicitycohead_Tanushree from '../assets/Publicitycohead_Tanushree.png';
 import Publicitycohead_Shivansh from '../assets/Publicitycohead_Shivansh.png';
+import InternPoster from '../assets/internposter.jpeg';
 
 const CustomStyles = () => (
   <style>{`
@@ -46,7 +47,7 @@ const CustomStyles = () => (
     }
     @keyframes marquee {
       0% { transform: translateX(0%); }
-      100% { transform: translateX(-100%); }
+      100% { transform: translateX(-50%); }
     }
     .animate-fade-in-up { animation: fade-in-up 0.8s ease-out forwards; }
     .animate-marquee { animation: marquee 40s linear infinite; }
@@ -214,32 +215,22 @@ const ToolsSlider = () => {
     return () => resetTimeout();
   }, [currentIndex, devopsTools.length]);
 
-  const goToSlide = (index) => {
-    setCurrentIndex(index);
-  };
+  const goToSlide = (index) => setCurrentIndex(index);
 
   const getCardStyle = (index) => {
     const offset = index - currentIndex;
     const total = devopsTools.length;
-    
     let adjustedOffset = offset;
-    if (offset > total / 2) {
-      adjustedOffset = offset - total;
-    } else if (offset < -total / 2) {
-      adjustedOffset = offset + total;
-    }
-
+    if (offset > total / 2) adjustedOffset = offset - total;
+    else if (offset < -total / 2) adjustedOffset = offset + total;
     const scale = adjustedOffset === 0 ? 1 : 0.8;
     const opacity = adjustedOffset === 0 ? 1 : (Math.abs(adjustedOffset) === 1 ? 0.6 : 0);
     const zIndex = total - Math.abs(adjustedOffset);
     const translateX = adjustedOffset * 60;
     const blur = Math.abs(adjustedOffset) > 0 ? 'blur(4px)' : 'blur(0px)';
-
     return {
       transform: `translateX(${translateX}%) scale(${scale})`,
-      opacity: opacity,
-      zIndex: zIndex,
-      filter: blur,
+      opacity, zIndex, filter: blur,
       transition: 'all 0.5s ease-in-out',
     };
   };
@@ -247,37 +238,24 @@ const ToolsSlider = () => {
   return (
     <div className="w-full relative flex flex-col items-center justify-center py-8">
       <div className="relative w-full h-[26rem] flex items-center justify-center">
-        {devopsTools.map((tool, index) => {
-          // --- THIS IS THE ONLY CHANGE: Dynamic classes for solid/transparent background ---
-          const isCenter = index === currentIndex;
-          const cardClasses = `p-8 rounded-2xl shadow-2xl border border-white/20 flex flex-col md:flex-row items-center gap-8 min-h-[22rem] transition-all duration-500 ${
-            isCenter ? 'bg-[#2a3f54]' : 'bg-[#2a3f54]/80 backdrop-blur-lg'
-          }`;
-
-          return (
-            <div
-              key={tool.name}
-              className="absolute w-full max-w-2xl cursor-pointer"
-              style={getCardStyle(index)}
-              onClick={() => goToSlide(index)}
-            >
-              <div className={cardClasses}>
-                <div className="flex-shrink-0 flex flex-col items-center justify-center space-y-4 md:w-1/4">
-                  <img
-                    src={tool.logoUrl}
-                    alt={`${tool.name} logo`}
-                    className="h-24 w-auto object-contain"
-                    onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/80x80/e2e8f0/64748b?text=LOGO'; }}
-                  />
-                  <h4 className="font-bold text-2xl text-white text-center tracking-wider">{tool.name}</h4>
-                </div>
-                <div className="md:w-3/4">
-                  <p className="text-gray-300 text-base md:text-lg leading-relaxed text-center md:text-left">{tool.description}</p>
-                </div>
+        {devopsTools.map((tool, index) => (
+          <div
+            key={tool.name}
+            className="absolute w-full max-w-2xl cursor-pointer"
+            style={getCardStyle(index)}
+            onClick={() => goToSlide(index)}
+          >
+            <div className={`p-8 rounded-2xl shadow-2xl border border-white/20 flex flex-col md:flex-row items-center gap-8 min-h-[22rem] transition-all duration-500 ${index === currentIndex ? 'bg-[#2a3f54]' : 'bg-[#2a3f54]/80 backdrop-blur-lg'}`}>
+              <div className="flex-shrink-0 flex flex-col items-center justify-center space-y-4 md:w-1/4">
+                <img src={tool.logoUrl} alt={`${tool.name} logo`} className="h-24 w-auto object-contain" />
+                <h4 className="font-bold text-2xl text-white text-center tracking-wider">{tool.name}</h4>
+              </div>
+              <div className="md:w-3/4">
+                <p className="text-gray-300 text-base md:text-lg leading-relaxed text-center md:text-left">{tool.description}</p>
               </div>
             </div>
-          );
-        })}
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -288,32 +266,20 @@ const TeamCard = ({ name, designation, photoUrl, animationDelay }) => (
     className="flex-shrink-0 w-full bg-slate-400 backdrop-blur-md border border-gray-400/50 rounded-2xl shadow-lg p-6 text-center transition-all duration-300 hover:-translate-y-3 hover:shadow-xl hover:shadow-orange-400/30 animate-fade-in-up"
     style={{ animationDelay }}
   >
-    <img
-      src={photoUrl}
-      alt={name}
-      className="w-24 h-24 mx-auto object-cover border-4 border-orange-400 rounded-full"
-      onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/96x96/e2e8f0/64748b?text=Photo'; }}
-    />
+    <img src={photoUrl} alt={name} className="w-24 h-24 mx-auto object-cover border-4 border-orange-400 rounded-full" />
     <h4 className="font-bold text-lg mt-4 text-slate-800">{name}</h4>
     <p className="text-sm text-[#2a3f54] font-medium mt-1 whitespace-pre-line">{designation}</p>
   </div>
 );
 
 const InternCard = ({ name, photoUrl }) => (
-  <div className="h-full flex-shrink-0 w-full bg-white rounded-2xl shadow-lg p-6 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-orange-400/20 flex flex-col">
+  <div className="h-full flex-shrink-0 w-full bg-slate-300 rounded-2xl shadow-lg p-6 text-center transition-all duration-300 hover:-translate-y-2 hover:shadow-orange-400/20 flex flex-col">
     <div className="flex-grow">
-      <img
-        src={photoUrl}
-        alt={name}
-        className="w-24 h-24 rounded-full mx-auto object-cover border-4 border-orange-400"
-        onError={(e) => { e.target.onerror = null; e.target.src = 'https://placehold.co/96x96/e2e8f0/64748b?text=Photo'; }}
-      />
+      <img src={photoUrl} alt={name} className="w-24 h-24 rounded-full mx-auto object-cover border-4 border-orange-400" />
       <h4 className="font-bold text-lg mt-4 text-slate-800">{name}</h4>
     </div>
     <div className="mt-auto border-t border-slate-400 pt-3 w-full">
-      <p className="text-center text-sm font-semibold text-orange-400">
-        RigelX Infotech Private Limited
-      </p>
+      <p className="text-center text-sm font-semibold text-orange-400">RigelX Infotech Private Limited</p>
     </div>
   </div>
 );
@@ -333,9 +299,9 @@ const InternsMarquee = () => {
 
   return (
     <div className="w-full overflow-hidden relative py-4">
-      <div className="flex animate-marquee hover:pause-animation">
+      <div className="flex animate-marquee hover:pause-animation space-x-8 pr-8">
         {extendedStudentData.map((student, index) => (
-          <div key={index} className="flex-shrink-0 w-64 mx-4">
+          <div key={index} className="flex-shrink-0 w-64">
             <InternCard name={student.name} photoUrl={student.photoUrl} />
           </div>
         ))}
@@ -343,6 +309,7 @@ const InternsMarquee = () => {
     </div>
   );
 }
+
 
 const About = () => {
     const pageWrapperRef = useRef(null);
@@ -421,7 +388,25 @@ const About = () => {
 
         <div className="relative z-10 w-full text-center bg-slate-100/80 backdrop-blur-sm py-16">
             <h2 className="text-4xl md:text-5xl font-extrabold text-[#2a3f54] drop-shadow-lg mb-8 animate-fade-in-up" style={{animationDelay: '3.5s'}}>Meet Our Interns</h2>
-            <InternsMarquee />
+            
+            <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 mb-12 bg-white/70 backdrop-blur-md p-8 rounded-2xl shadow-lg border border-slate-200/50">
+                <div className="flex flex-col md:flex-row md:items-stretch gap-12">
+                    <div className="md:w-3/5 text-left animate-fade-in-up flex flex-col justify-center" style={{animationDelay: '3.6s'}}>
+                        <p className="text-slate-700 text-lg leading-relaxed text-justify mb-4">
+                            The DevOps Club of A. P. Shah Institute of Technology is thrilled to celebrate a significant milestone. We extend our heartiest congratulations to our 15 dedicated students who have successfully completed an impactful internship at RigelX Infotech Private Limited. This collaboration provided an unparalleled opportunity for our members to gain critical hands-on industry experience and apply their skills to solve real-world challenges.
+                        </p>
+                        <p className="text-slate-700 text-lg leading-relaxed text-justify">
+                          We are immensely proud of their hard work, dedication, and professional growth throughout this journey. During the program, they not only sharpened their technical abilities but also mastered the vital skills of teamwork, communication, and collaboration. They have grown from students into young professionals ready for success, and this achievement sets a new standard for our club. We are excited to see them lead the next wave of innovation in the technology industry.
+                        </p>
+                    </div>
+                    <div className="md:w-2/5 w-full flex justify-center animate-fade-in-up" style={{animationDelay: '3.7s'}}>
+                        <div className="w-full max-w-sm overflow-hidden rounded-lg shadow-md border border-slate-300">
+                            <img src={InternPoster} alt="Internship Poster" className="object-cover w-full h-full" />
+                        </div>
+                    </div>
+                </div>
+                <InternsMarquee />
+            </div>
         </div>
       </section>
     </>
