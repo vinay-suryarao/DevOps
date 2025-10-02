@@ -9,7 +9,7 @@ import Newsletters from "../pages/Newsletters";
 import Credits from "../pages/Credits";
 import Hackathons from "../pages/Hackathons";
 import Admin from "../pages/Admin";
-import Redhat from "../pages/Redhat"; // <<< STEP 2: Naye Redhat page ko import karein
+import Redhat from "../pages/RedHat"; // <<< STEP 2: Naye Redhat page ko import karein
 
 export default function AppRoutes() {
   return (
