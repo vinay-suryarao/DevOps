@@ -3,6 +3,7 @@
 import React, { useRef, useEffect } from "react";
 // Image aur Icons ko import karein
 import certificateImg from '../assets/vishalsir_redhatcertificate.jpeg';
+import certificateImg1 from '../assets/sonalmam_redhatcertificate.png';
 import shreyashCertificate from '../assets/shreyash_redhatcertificate.jpeg';
 import redhatamb1 from '../assets/redhatamb1.jpeg';
 import redhatamb2 from '../assets/redhatamb2.jpeg';
@@ -153,7 +154,7 @@ const educators = [
   {
     name: "Prof. Sonal Jain",
     description: "Certified as a RED HAT CERTIFIED SYSTEM ADMINISTRATOR (RHCSA) for Red Hat Enterprise Linux 8. Prof. Jain excels in managing and troubleshooting Linux systems, ensuring robust and efficient operations.",
-    certificate: certificateImg
+    certificate: certificateImg1
   }
 ];
 
