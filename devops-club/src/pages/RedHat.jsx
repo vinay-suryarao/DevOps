@@ -1,5 +1,3 @@
-// src/pages/Redhat.jsx
-
 import React, { useRef, useEffect } from "react";
 // Image aur Icons ko import karein
 import certificateImg from '../assets/vishalsir_redhatcertificate.jpeg';
@@ -10,7 +8,10 @@ import redhatamb2 from '../assets/redhatamb2.jpeg';
 import redhatamb3 from '../assets/redhatamb3.jpeg';
 import redhatamb4 from '../assets/redhatamb4.jpeg';
 import redhatamb5 from '../assets/redhatamb5.jpeg';
-import { FaCertificate, FaUserGraduate } from "react-icons/fa";
+import redhatamb6 from '../assets/redhatamb6.jpg';
+import redhatamb7 from '../assets/redhatamb7.jpg';
+import redhatamb8 from '../assets/redhatamb8.jpg';
+import { FaCertificate, FaUserGraduate, FaTrophy, FaAward, FaUsers } from "react-icons/fa";
 
 // Swiper ke components aur styles import karein
 import { Swiper, SwiperSlide } from 'swiper/react';
@@ -19,7 +20,7 @@ import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 
-// --- Background Component (Copied from your first file) ---
+// --- Background Component (No Changes) ---
 const NetworkBackground = ({ containerRef }) => {
     const canvasRef = useRef(null);
 
@@ -143,7 +144,6 @@ const NetworkBackground = ({ containerRef }) => {
     return <canvas ref={canvasRef} className="absolute inset-0 z-0 w-full h-full bg-slate-100" style={{ display: 'block' }} />;
 };
 
-
 // Educators ka data
 const educators = [
   {
@@ -159,17 +159,59 @@ const educators = [
 ];
 
 const Redhat = () => {
-    const pageWrapperRef = useRef(null); // Ref for the main container
-    const ambassadorImages = [redhatamb1, redhatamb2, redhatamb3, redhatamb4, redhatamb5];
+    const pageWrapperRef = useRef(null);
+    
+    // --- UNIFIED DATA FOR ALL SUCCESS STORY CARDS ---
+    const successStories = [
+        {
+            type: 'image',
+            icon: <FaUserGraduate />,
+            title: "RHA Challenge India Winner",
+            name: "Shreyash Prashant Narvekar",
+            description: "We are thrilled to announce that Shreyash Prashant Narvekar, a TE IT student, has secured the 2nd rank across all Red Hat Academy students in Maharashtra. His remarkable performance among 69 RHA colleges at the Red Hat Academy India Challenge 2024 also earned A.P. Shah Institute of Technology a prestigious Silver Medal.",
+            content: shreyashCertificate,
+            alt: "Shreyash Narvekar's Achievement Certificate",
+            fit: 'contain'
+        },
+        {
+            type: 'slider',
+            icon: <FaUsers />,
+            title: "Handover Highlights",
+            name: "Ambassador Ceremony",
+            // --- DESCRIPTION UPDATED HERE ---
+            description: "In a proud moment for APSIT, Shreyash Narvekar was appointed as the new Red Hat Academy Student Ambassador. The official handover ceremony was graced by the Principal, Vice Principal, and department heads, marking a significant step for our open-source initiatives.",
+            content: [redhatamb1, redhatamb2, redhatamb3, redhatamb4, redhatamb5],
+            alt: "Ceremony Image",
+            fit: 'contain'
+        },
+        {
+            type: 'slider',
+            icon: <FaTrophy />,
+            title: "RHLC Mastery Series Winner",
+            name: "Prof. Vishal Badgujar",
+            description: "Prof. Vishal Badgujar was honored as a winner in the Red Hat Learning Community (RHLC) Mastery Series contest. This prestigious recognition celebrates his significant contributions and active engagement within the open-source community.",
+            content: [redhatamb6, redhatamb7],
+            alt: "Red Hat Learning Community Mastery Series Achievement",
+            fit: 'contain'
+        },
+        {
+            type: 'image',
+            icon: <FaAward />,
+            title: "Recognized Program Educator 2025",
+            name: "Prof. Vishal Badgujar",
+            description: "In recognition of his unwavering commitment to professional excellence, Prof. Vishal Badgujar earned the '2025 Red Hat Academy - Program Educator' distinction. This honor acknowledges his dedication to fostering an enriching open-source environment.",
+            content: redhatamb8,
+            alt: "2025 Red Hat Academy Program Educator Badge",
+            fit: 'contain'
+        }
+    ];
 
     return (
         <div ref={pageWrapperRef} className="relative min-h-screen overflow-hidden">
-            {/* --- Animated Background --- */}
             <div className="absolute inset-0 z-0">
                 <NetworkBackground containerRef={pageWrapperRef} />
             </div>
 
-            {/* --- Original Page Content (with relative z-10) --- */}
             <div className="relative z-10 container mx-auto px-4 py-16">
                 <div className="text-center">
                     <h1 className="text-5xl md:text-6xl font-extrabold mb-4 drop-shadow-sm">
@@ -182,7 +224,7 @@ const Redhat = () => {
                     </p>
                 </div>
 
-                {/* --- Red Hat Certified Instructors Section --- */}
+                {/* --- Red Hat Certified Instructors Section (No Changes) --- */}
                 <div className="mt-20">
                     <h2 className="text-4xl font-bold text-center text-slate-800 mb-4">
                         Red Hat Certified Instructors
@@ -190,92 +232,69 @@ const Redhat = () => {
                     <div className="w-24 h-1.5 bg-red-600 mx-auto mb-12"></div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-10 max-w-5xl mx-auto">
                         {educators.map((educator, index) => (
-                            <div
-                                key={index}
-                                className="bg-slate-800 rounded-xl shadow-2xl overflow-hidden transform transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-red-500/30 border-t-4 border-red-600"
-                            >
+                            <div key={index} className="bg-slate-800 rounded-xl shadow-2xl overflow-hidden transform transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-red-500/30 border-t-4 border-red-600">
                                 <div className="p-6">
                                     <h3 className="text-2xl font-bold text-white mb-3">{educator.name}</h3>
-                                    <p className="text-sm text-slate-300 leading-relaxed">{educator.description}</p>
+                                    <p className="text-1xl text-slate-300 leading-relaxed text-justify">{educator.description}</p>
                                 </div>
                                 <div className="px-6 pb-6">
                                     <div className="flex items-center gap-2 text-white font-semibold mb-3">
                                         <FaCertificate className="text-yellow-400" />
                                         <span>Red Hat Certification</span>
                                     </div>
-                                    <img
-                                        src={educator.certificate}
-                                        alt={`${educator.name}'s Certificate`}
-                                        className="w-full h-auto rounded-lg border-2 border-slate-600"
-                                    />
+                                    <img src={educator.certificate} alt={`${educator.name}'s Certificate`} className="w-full h-auto rounded-lg border-2 border-slate-600"/>
                                 </div>
                             </div>
                         ))}
                     </div>
                 </div>
 
-                {/* --- Red Hat Student Ambassador Section (Re-designed) --- */}
+                {/* --- Success Stories Section --- */}
                 <div className="mt-20">
                     <h2 className="text-4xl font-bold text-center text-slate-800 mb-4">
-                        Red Hat Student Ambassador
+                        Success Stories
                     </h2>
                     <div className="w-24 h-1.5 bg-red-600 mx-auto mb-12"></div>
                     
-                    <div className="max-w-7xl mx-auto grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
-                        
-                        <div className="bg-slate-800 rounded-xl shadow-2xl overflow-hidden transform transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-red-500/30 border-t-4 border-red-600">
-                            <div className="p-6">
-                                <div className="flex items-center gap-2 text-red-400 font-semibold mb-3">
-                                    <FaUserGraduate />
-                                    <span>Ambassador</span>
+                    {/* --- UNIFIED CARD GRID --- */}
+                    <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-2 gap-10">
+                        {successStories.map((story, index) => (
+                            <div key={index} className="bg-slate-800 rounded-xl shadow-2xl overflow-hidden transform transition-all duration-300 ease-in-out hover:scale-105 hover:shadow-red-500/30 border-t-4 border-red-600 flex flex-col">
+                                <div className="p-6 flex-grow">
+                                    <div className="flex items-center gap-3 text-red-400 font-semibold mb-3">
+                                        {story.icon}
+                                        <span>{story.title}</span>
+                                    </div>
+                                    <h3 className="text-2xl font-bold text-white mb-3">
+                                        {story.name}
+                                    </h3>
+                                    <p className="text-sm text-slate-300 leading-relaxed text-justify">
+                                        {story.description}
+                                    </p>
                                 </div>
-                                <h3 className="text-2xl font-bold text-white mb-3">
-                                    Shreyash Prashant Narvekar
-                                </h3>
-                                <p className="text-sm text-slate-300 leading-relaxed text-justify">
-                                        In a proud moment for APSIT, we introduce Shreyash Narvekar, Student Ambassador for Red Hat Academy. Shreyash has already demonstrated exceptional skill by securing the 2nd position in the Redhat India Final Challenge Contest. Taking the baton from his predecessor, he will now lead the Red Hat initiatives, guiding fellow students and fostering a vibrant open-source community on campus.
-                                </p>
+                                
+                                <div className="px-4 pb-4 mt-auto h-[300px]">
+                                    {story.type === 'slider' ? (
+                                        <Swiper
+                                            modules={[Navigation, Pagination, Autoplay]}
+                                            loop={true}
+                                            autoplay={{ delay: 3500, disableOnInteraction: false }}
+                                            pagination={{ clickable: true }}
+                                            navigation={true}
+                                            className="mySwiper w-full h-full"
+                                        >
+                                            {story.content.map((image, i) => (
+                                                <SwiperSlide key={i}>
+                                                    <img src={image} alt={`${story.alt} ${i + 1}`} className={`rounded-xl w-full h-full p-2 object-${story.fit}`} />
+                                                </SwiperSlide>
+                                            ))}
+                                        </Swiper>
+                                    ) : (
+                                        <img src={story.content} alt={story.alt} className={`w-full h-full rounded-lg p-2 object-${story.fit}`} />
+                                    )}
+                                </div>
                             </div>
-                            <div className="px-4 pb-4">
-                                <img
-                                    src={shreyashCertificate}
-                                    alt="Shreyash Narvekar's Achievement Certificate"
-                                    className="w-full max-h-[240px] object-contain rounded-lg"
-                                />
-                            </div>
-                        </div>
-
-                        {/* Right Column: Image Slider */}
-                        <div>
-                            <h3 className="text-3xl font-bold mb-6 text-center lg:text-left">
-                                <span className="bg-gradient-to-r from-red-500 to-slate-600 bg-clip-text text-transparent">
-                                    Handover Highlights
-                                </span>
-                            </h3>
-                            <div className="max-w-lg mx-auto lg:mx-0">
-                              <Swiper
-                                modules={[Navigation, Pagination, Autoplay]}
-                                spaceBetween={20}
-                                slidesPerView={1}
-                                loop={true}
-                                autoplay={{ delay: 3000, disableOnInteraction: false }}
-                                pagination={{ clickable: true }}
-                                navigation={true}
-                                className="mySwiper"
-                              >
-                                {ambassadorImages.map((image, index) => (
-                                  <SwiperSlide key={index}>
-                                    <img
-                                      src={image}
-                                      alt={`Ceremony Image ${index + 1}`}
-                                      className="rounded-xl object-cover w-full h-[400px]"
-                                    />
-                                  </SwiperSlide>
-                                ))}
-                              </Swiper>
-                            </div>
-                        </div>
-
+                        ))}
                     </div>
                 </div>
             </div>
