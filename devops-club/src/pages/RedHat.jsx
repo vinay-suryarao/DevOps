@@ -1,5 +1,7 @@
+/* eslint-disable no-unused-vars */
+/* eslint-disable no-irregular-white-space */
 import React, { useRef, useEffect } from "react";
-// Image aur Icons ko import karein
+import { Link } from "react-router-dom";
 import certificateImg from '../assets/vishalsir_redhatcertificate.jpeg';
 import certificateImg1 from '../assets/sonalmam_redhatcertificate.png';
 import shreyashCertificate from '../assets/shreyash_redhatcertificate.jpeg';
@@ -11,16 +13,13 @@ import redhatamb5 from '../assets/redhatamb5.jpeg';
 import redhatamb6 from '../assets/redhatamb6.jpg';
 import redhatamb7 from '../assets/redhatamb7.jpg';
 import redhatamb8 from '../assets/redhatamb8.jpg';
-import { FaCertificate, FaUserGraduate, FaTrophy, FaAward, FaUsers } from "react-icons/fa";
-
-// Swiper ke components aur styles import karein
+import { FaCertificate, FaUserGraduate, FaTrophy, FaAward, FaUsers, FaArrowLeft } from "react-icons/fa";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Navigation, Autoplay } from 'swiper/modules';
 import 'swiper/css';
 import 'swiper/css/pagination';
 import 'swiper/css/navigation';
 
-// --- Background Component (No Changes) ---
 const NetworkBackground = ({ containerRef }) => {
     const canvasRef = useRef(null);
 
@@ -70,7 +69,7 @@ const NetworkBackground = ({ containerRef }) => {
             const colors = ['#f97316', '#3b82f6'];
             
             for (let i = 0; i < numberOfParticles; i++) {
-                let size = (Math.random() * 2.5) + 1.5; 
+                let size = (Math.random() * 2.5) + 1.5;
                 let x = (Math.random() * (canvas.offsetWidth + 200)) - 100;
                 let y = (Math.random() * (canvas.offsetHeight / (window.devicePixelRatio || 1) + 200)) - 100;
                 let directionX = (Math.random() * .3) - .15;
@@ -89,7 +88,7 @@ const NetworkBackground = ({ containerRef }) => {
                     let distance = ((particlesArray[a].x - particlesArray[b].x) ** 2) + ((particlesArray[a].y - particlesArray[b].y) ** 2);
                     if (distance < (scaledWidth / 9) * (scaledHeight / 9)) {
                         opacityValue = 1 - (distance / 22000);
-                        ctx.strokeStyle = `rgba(42, 63, 84, ${opacityValue})`; 
+                        ctx.strokeStyle = `rgba(42, 63, 84, ${opacityValue})`;
                         ctx.lineWidth = 1;
                         ctx.beginPath();
                         ctx.moveTo(particlesArray[a].x, particlesArray[a].y);
@@ -102,7 +101,7 @@ const NetworkBackground = ({ containerRef }) => {
 
         function animate(timestamp) {
             if(!ctx || !particlesArray) return;
-            ctx.clearRect(0, 0, canvas.width, canvas.height); 
+            ctx.clearRect(0, 0, canvas.width, canvas.height);
             
             const driftX = Math.sin(timestamp / 8000) * 50;
             const driftY = Math.cos(timestamp / 8000) * 30;
@@ -120,16 +119,16 @@ const NetworkBackground = ({ containerRef }) => {
         init();
         animate(0);
         
-        const handleResize = () => { 
+        const handleResize = () => {
             window.cancelAnimationFrame(animationFrameId);
-            setCanvasDimensions(); 
+            setCanvasDimensions();
             init();
             animate(0);
         };
 
         const resizeObserver = new ResizeObserver(handleResize);
         if (containerRef.current) {
-          resizeObserver.observe(containerRef.current);
+            resizeObserver.observe(containerRef.current);
         }
 
         window.addEventListener('resize', handleResize);
@@ -139,29 +138,27 @@ const NetworkBackground = ({ containerRef }) => {
             window.removeEventListener('resize', handleResize);
             resizeObserver.disconnect();
         };
-      }, [containerRef]);
+    }, [containerRef]);
 
     return <canvas ref={canvasRef} className="absolute inset-0 z-0 w-full h-full bg-slate-100" style={{ display: 'block' }} />;
 };
 
-// Educators ka data
 const educators = [
-  {
-    name: "Prof. Vishal Badgujar",
-    description: "Certified as a RED HAT CERTIFIED SYSTEM ADMINISTRATOR (RHCSA) for Red Hat Enterprise Linux 8. Prof. Badgujar brings expertise in system administration, command-line proficiency, and core system services.",
-    certificate: certificateImg
-  },
-  {
-    name: "Prof. Sonal Jain",
-    description: "Certified as a RED HAT CERTIFIED SYSTEM ADMINISTRATOR (RHCSA) for Red Hat Enterprise Linux 8. Prof. Jain excels in managing and troubleshooting Linux systems, ensuring robust and efficient operations.",
-    certificate: certificateImg1
-  }
+    {
+        name: "Prof. Vishal Badgujar",
+        description: "Certified as a RED HAT CERTIFIED SYSTEM ADMINISTRATOR (RHCSA) for Red Hat Enterprise Linux 8. Prof. Badgujar brings expertise in system administration, command-line proficiency, and core system services.",
+        certificate: certificateImg
+    },
+    {
+        name: "Prof. Sonal Jain",
+        description: "Certified as a RED HAT CERTIFIED SYSTEM ADMINISTRATOR (RHCSA) for Red Hat Enterprise Linux 8. Prof. Jain excels in managing and troubleshooting Linux systems, ensuring robust and efficient operations.",
+        certificate: certificateImg1
+    }
 ];
 
 const Redhat = () => {
     const pageWrapperRef = useRef(null);
     
-    // --- UNIFIED DATA FOR ALL SUCCESS STORY CARDS ---
     const successStories = [
         {
             type: 'image',
@@ -213,6 +210,16 @@ const Redhat = () => {
             </div>
 
             <div className="relative z-10 container mx-auto px-4 py-16">
+                <div className="absolute top-8 left-8">
+                    <Link
+                        to="/"
+                        className="inline-flex items-center gap-2 text-red-600 hover:text-red-800 transition-colors font-semibold"
+                    >
+                        <FaArrowLeft />
+                        Back to Home
+                    </Link>
+                </div>
+
                 <div className="text-center">
                     <h1 className="text-5xl md:text-6xl font-extrabold mb-4 drop-shadow-sm">
                         <span className="bg-gradient-to-r from-red-400 to-slate-600 bg-clip-text text-transparent">
@@ -224,7 +231,6 @@ const Redhat = () => {
                     </p>
                 </div>
 
-                {/* --- Red Hat Certified Instructors Section (No Changes) --- */}
                 <div className="mt-20">
                     <h2 className="text-4xl font-bold text-center text-slate-800 mb-4">
                         Red Hat Certified Instructors
