@@ -530,7 +530,7 @@ const EventForm = ({ event, type, onClose }) => {
                             <FileInputField label="Gallery Images" name="galleryImagesFiles" onChange={handleFileChange} accept="image/*" multiple files={formData.galleryImagesFiles} />
                          </>
                     )}
-                    
+                     
                     <div className="pt-4 flex justify-end">
                          <button type="submit" disabled={submitting} className="flex items-center gap-2 py-2 px-6 bg-indigo-600 text-white font-semibold rounded-lg shadow-md hover:bg-indigo-700 disabled:bg-indigo-400">
                              {submitting ? <><Loader className="animate-spin w-5 h-5" /> Submitting...</> : (event ? 'Update Event' : 'Create Event')}

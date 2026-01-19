@@ -1,10 +1,11 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
 import { db } from '../firebaseConfig';
+import { Users } from 'lucide-react'; // Added Icon for Team Name
 
 const googleScriptUrl = import.meta.env.VITE_HACKATHON_REGISTRATION_SCRIPT_URL;
 
-// --- BACKGROUND COMPONENT (Updated to accept a ref) ---
+// --- BACKGROUND COMPONENT (No Changes) ---
 const NetworkBackground = ({ containerRef }) => {
   const canvasRef = useRef(null);
 
@@ -134,7 +135,6 @@ export default function Hackathons() {
   const [isRegFormOpen, setRegFormOpen] = useState(false);
   const [selectedHackathon, setSelectedHackathon] = useState(null);
 
-  // 1. Create a ref for the main container
   const pageWrapperRef = useRef(null);
 
   useEffect(() => {
@@ -160,10 +160,7 @@ export default function Hackathons() {
   if (loading) return <div className="text-center py-20 text-xl text-slate-600">Loading Hackathons...</div>;
 
   return (
-    // 2. Attach the ref to the main div
     <div ref={pageWrapperRef} className="relative bg-slate-100 min-h-screen font-sans">
-      
-      {/* 3. Pass the ref to the NetworkBackground component */}
       <div className="absolute inset-0 z-0"><NetworkBackground containerRef={pageWrapperRef} /></div>
       
       <div className="relative z-10 container mx-auto px-4 py-16">
@@ -204,12 +201,14 @@ export default function Hackathons() {
   );
 }
 
-// --- Registration Modal Component (No changes needed here) ---
+// --- UPDATED Registration Modal Component ---
 const RegistrationModal = ({ hackathon, onClose }) => {
   const teamSize = hackathon.teamSize || 4;
   const createInitialState = () => Array.from({ length: teamSize }, () => ({ name: '', college: '', email: '', contactNumber: '' }));
 
   const [members, setMembers] = useState(createInitialState());
+  // NEW: State for Team Name
+  const [teamName, setTeamName] = useState('');
   const [regStatus, setRegStatus] = useState({ submitting: false, message: '' });
 
   const handleMemberChange = (index, e) => {
@@ -220,6 +219,13 @@ const RegistrationModal = ({ hackathon, onClose }) => {
 
   const handleRegSubmit = async (e) => {
     e.preventDefault();
+
+    // Validation for Team Name
+    if (!teamName.trim()) {
+        setRegStatus({ submitting: false, message: 'Please enter a Team Name.' });
+        return;
+    }
+
     setRegStatus({ submitting: true, message: 'Checking your registration status...' });
 
     const allEmails = members.map(m => m.email.trim()).filter(email => email !== '');
@@ -250,7 +256,12 @@ const RegistrationModal = ({ hackathon, onClose }) => {
 
     setRegStatus({ submitting: true, message: 'Registering...' });
     
-    const dataToSubmit = { hackathonName: hackathon.name };
+    // Updated Data to Submit
+    const dataToSubmit = { 
+        hackathonName: hackathon.name,
+        TeamName: teamName // Adding Team Name here
+    };
+
     members.forEach((member, index) => {
         const prefix = index === 0 ? 'Leader' : `Member${index + 1}`;
         dataToSubmit[`${prefix}Name`] = member.name;
@@ -284,7 +295,7 @@ const RegistrationModal = ({ hackathon, onClose }) => {
       <div className="bg-white p-8 rounded-lg shadow-xl w-full max-w-lg relative max-h-[90vh] overflow-y-auto">
         <button onClick={onClose} disabled={regStatus.submitting} className="absolute top-3 right-5 text-gray-400 hover:text-gray-700 text-3xl disabled:cursor-not-allowed">&times;</button>
         <h2 className="text-2xl font-bold mb-2">Register for {hackathon.name}</h2>
-        <p className="mb-6 text-gray-500">Please fill in details for all {teamSize} members.</p>
+        <p className="mb-6 text-gray-500">Please fill in details for your team.</p>
         
         {regStatus.message && (
           <div className={`p-3 my-4 rounded-md text-center ${regStatus.message.includes('successful') ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}`}>
@@ -294,6 +305,24 @@ const RegistrationModal = ({ hackathon, onClose }) => {
         
         {!regStatus.message.includes('successful') && (
           <form onSubmit={handleRegSubmit} className="space-y-6">
+            
+            {/* --- NEW TEAM NAME FIELD --- */}
+            <div className="p-4 bg-indigo-50 border border-indigo-200 rounded-lg">
+                <h3 className="font-bold text-lg mb-3 text-indigo-700 flex items-center gap-2">
+                    <Users className="w-5 h-5" /> Team Details
+                </h3>
+                <div>
+                    <input 
+                        type="text" 
+                        placeholder="Enter Team Name" 
+                        value={teamName} 
+                        onChange={(e) => setTeamName(e.target.value)} 
+                        className="w-full p-3 border border-indigo-300 rounded-lg focus:ring-2 focus:ring-indigo-500" 
+                        required 
+                    />
+                </div>
+            </div>
+
             {members.map((member, index) => (
               <div key={index} className="p-4 border border-slate-200 rounded-lg">
                 <h3 className="font-bold text-lg mb-3 text-slate-700">{index === 0 ? 'Team Leader' : `Member ${index + 1}`}</h3>
