@@ -177,7 +177,7 @@ const services = [
   { title: "DEPLOY", icon: <FaHome /> },
   { title: "OPERATE", icon: <FaPaintRoller /> },
   { title: "MONITOR", icon: <FaChartLine /> },
-];
+]; 
 
 const coordinators = [
   {
