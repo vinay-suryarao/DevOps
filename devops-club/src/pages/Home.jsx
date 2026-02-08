@@ -1,7 +1,7 @@
 /* eslint-disable no-unused-vars */
 /* eslint-disable no-irregular-whitespace */
 import React, { useRef, useEffect } from "react";
-import { Link } from "react-router-dom"; // <<< 1. YAHAN LINK IMPORT KIYA GAYA HAI
+import { Link } from "react-router-dom";
 import {
   FaShieldAlt,
   FaUniversity,
@@ -21,8 +21,18 @@ import sujataImg from "../assets/sujata.jpg";
 
 // Logo imports
 import redHatLogoHat from "../assets/redhat.png";
-import redHatAcademyLogo from "../assets/redhat-academy-logo.jpg";
 import premiumpartner from "../assets/premium-partner.jpg";
+
+// ==========================================
+// 1. LOCAL VIDEO PATHS CONFIGURATION
+// Ye files public/videos/ folder me honi chahiye
+// ==========================================
+const localVideos = {
+  hero: "/videos/hero-bg.mp4",
+  sonal: "/videos/sonal.mp4",
+  sujata: "/videos/sujata.mp4",
+  vishal: "/videos/vishal.mp4"
+};
 
 const NetworkBackground = ({ containerRef }) => {
   const canvasRef = useRef(null);
@@ -177,7 +187,7 @@ const services = [
   { title: "DEPLOY", icon: <FaHome /> },
   { title: "OPERATE", icon: <FaPaintRoller /> },
   { title: "MONITOR", icon: <FaChartLine /> },
-]; 
+];
 
 const coordinators = [
   {
@@ -215,24 +225,21 @@ const coordinators = [
 
 const events = [
   {
-    videoSrc:
-      "https://res.cloudinary.com/dfzlwhsia/video/upload/v1758978245/Sonal_Jain_2_ccod7q.mp4",
+    videoSrc: localVideos.sonal, // Updated to local path
     title: "What is DevOps ?",
     description:
       "DevOps is a combination of development and operations practices that aims to shorten the software development lifecycle and deliver high-quality software faster. It emphasizes automation, collaboration, and continuous integration and delivery (CI/CD) to ensure efficient, reliable, and scalable software deployment.",
     position: "left",
   },
   {
-    videoSrc:
-      "https://res.cloudinary.com/dfzlwhsia/video/upload/v1758978729/Sujata_Mam_2_mrj6gv.mp4",
+    videoSrc: localVideos.sujata, // Updated to local path
     title: "Basics of DevOps",
     description:
       "At its core, DevOps represents a modern approach to software delivery that integrates people, processes, and tools. It focuses on continuous improvement, automation of repetitive tasks, and bridging the gap between development and operations teams to enhance productivity and efficiency.",
     position: "right",
   },
   {
-    videoSrc:
-      "https://res.cloudinary.com/dfzlwhsia/video/upload/v1758978962/Vishal_Sir_nhdnqj.mp4",
+    videoSrc: localVideos.vishal, // Updated to local path
     title: "Why to choose DevOps ?",
     description:
       "Adopting DevOps empowers organizations to accelerate software delivery, improve collaboration, and achieve higher reliability. It ensures faster releases, reduced errors, and greater customer satisfaction by automating processes and promoting a culture of shared responsibility.",
@@ -340,6 +347,7 @@ const VideoCard = ({ videoSrc }) => (
       loop
       playsInline
       controls
+      preload="metadata" // IMPORTANT: Helps load page faster
     />
   </div>
 );
@@ -390,10 +398,9 @@ const Home = () => {
           autoPlay
           loop
           muted
+          playsInline
           className="absolute top-0 left-0 w-full h-full object-cover z-0"
-          src={
-            "https://res.cloudinary.com/dfzlwhsia/video/upload/v1758979456/video_xrjzqm.mp4"
-          }
+          src={localVideos.hero} // Updated to local path
         />
         <div className="absolute top-0 left-0 w-full h-full bg-black/60 z-10" />
         <motion.div
