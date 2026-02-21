@@ -7,11 +7,11 @@ import DesignIshita from '../assets/Design_Ishita.png';
 import LiteratureAnubhav from '../assets/Literature_Anubhav.png';
 import LiteratureVarunkumar from '../assets/Literature_Varunkumar.png';
 import PublicityHarsh from '../assets/Publicity_Harsh.png';
-import PublicityNupur from '../assets/Publicity_Nupur.png';
+import PublicityRehan from '../assets/Publicity_Rehan.jpeg';
 import PhotographyShivam from '../assets/Photography_Shivam.png';
-import PhotographyRumiza from '../assets/Photography_Rumiza.png';
+import EventManagementRumiza from '../assets/Photography_Rumiza.png';
 import CinematographyShubham from '../assets/Cinematography_Shubham.png';
-import CinematographySonali from '../assets/Cinematography_Sonali.png';
+import Deep from '../assets/Deep.png';
 import TanviPawar from '../assets/Tanvi_Pawar.png';
 import AnubhavSingh from '../assets/Anubhav_Singh.png';
 import OmkarChadgaonkar from '../assets/Omkar_Chadgaonkar.png';
@@ -30,7 +30,7 @@ import RajMehta from '../assets/Raj_Mehta.png';
 import Technicalcohead_Ismaeel from '../assets/Technicalcohead_Ismaeel.png';
 import Technicalcohead_Chitresh from '../assets/Technicalcohead_Chitresh.png';
 import Designcohead_Madhura from '../assets/Designcohead_Madhura.png';
-import Designcohead_Siddharth from '../assets/Designcohead_Siddharth.png';
+import EventCohead_Aptab from '../assets/EventCohead_Aptab.jpeg';
 import Literaturecohead_Kanksha from '../assets/Literaturecohead_Kanksha.png';
 import Literaturecohead_Raj from '../assets/Literaturecohead_Raj.png';
 import Cinematographycohead_Aarya from '../assets/Cinematographycohead_Aarya.png';
@@ -325,13 +325,13 @@ const About = () => {
         { name: 'Vinay Suryarao', designation: 'Technical Team', photoUrl: TechnicalVinay},
         { name: 'Ishita Singh', designation: 'Design Team', photoUrl: DesignIshita},
         { name: 'Varunkumar Lysetti', designation: 'Literature Team', photoUrl: LiteratureVarunkumar },
-        { name: 'Nupur Sugadare', designation: 'Publicity Team', photoUrl: PublicityNupur },
-        { name: 'Sayyeda Rumiza', designation: 'Photography Team', photoUrl: PhotographyRumiza },
-        { name: 'Saloni Shirasat', designation: 'Cinematography Team', photoUrl: CinematographySonali },
+        { name: 'Rehan Shaikh', designation: 'Publicity Team', photoUrl: PublicityRehan },
+        { name: 'Sayyeda Rumiza', designation: 'Event Management Team', photoUrl: EventManagementRumiza },
+        { name: 'Deep Varkute', designation: 'Photography & Cinematography Team', photoUrl: Deep },
     ];
     const coHeadsData = [
         { name: 'Ismaeel Shaikh', designation: 'Technical Co-Head', photoUrl: Technicalcohead_Ismaeel },
-        { name: 'Siddharth Kumar', designation: 'Design Co-Head', photoUrl: Designcohead_Siddharth },
+        { name: 'Aptab Shaikh', designation: 'Event Management Co-Head', photoUrl: EventCohead_Aptab },
         { name: 'Raj Puranik', designation: 'Literature Co-Head', photoUrl: Literaturecohead_Raj },
         { name: 'Aarya Nichal', designation: 'Cinematography Co-Head', photoUrl: Cinematographycohead_Aarya },
         { name: 'Tanushree Gabhane', designation: 'Publicity Co-Head', photoUrl: Publicitycohead_Tanushree },
