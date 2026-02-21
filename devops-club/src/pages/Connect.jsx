@@ -27,7 +27,7 @@ const NetworkBackground = ({ containerRef }) => {
             if (!containerRef.current) return;
             const dpr = window.devicePixelRatio || 1;
             const containerHeight = containerRef.current.scrollHeight;
-            
+              
             canvas.style.width = '100%';
             canvas.style.height = `${containerHeight}px`;
             canvas.width = canvas.offsetWidth * dpr;
