@@ -13,6 +13,12 @@ import redhatamb5 from '../assets/redhatamb5.jpeg';
 import redhatamb6 from '../assets/redhatamb6.jpg';
 import redhatamb7 from '../assets/redhatamb7.jpg';
 import redhatamb8 from '../assets/redhatamb8.jpg';
+// --- FIXED THESE LINES BELOW ---
+import redhatamb9 from '../assets/redhatamb9.jpeg';
+import redhatamb10 from '../assets/redhatamb10.jpeg';
+import redhatamb11 from '../assets/redhatamb11.jpeg';
+import redhatamb12 from '../assets/redhatamb12.jpeg';
+
 import { FaCertificate, FaUserGraduate, FaTrophy, FaAward, FaUsers, FaArrowLeft } from "react-icons/fa";
 import { Swiper, SwiperSlide } from 'swiper/react';
 import { Pagination, Navigation, Autoplay } from 'swiper/modules';
@@ -158,7 +164,7 @@ const educators = [
 
 const Redhat = () => {
     const pageWrapperRef = useRef(null);
-    
+
     const successStories = [
         {
             type: 'image',
@@ -173,12 +179,21 @@ const Redhat = () => {
         {
             type: 'slider',
             icon: <FaUsers />,
-            title: "Handover Highlights",
+            title: "Handover Highlights (2025-2026)",
+            name: "New Ambassador Appointment",
+            description: "In a significant transition for the APSIT Red Hat Academy, Vinay Narendra Suryarao has been appointed as the Student Ambassador for the 2025-2026 term. This handover recognizes his technical expertise and leadership potential, empowering him to drive open-source innovation and community engagement within the institute.",
+            content: [redhatamb9, redhatamb10, redhatamb11, redhatamb12], 
+            alt: "2025-2026 Ceremony Image",
+            fit: 'contain'
+        },
+        {
+            type: 'slider',
+            icon: <FaUsers />,
+            title: "Handover Highlights (2024-2025)",
             name: "Ambassador Ceremony",
-            // --- DESCRIPTION UPDATED HERE ---
-            description: "In a proud moment for APSIT, Shreyash Narvekar was appointed as the new Red Hat Academy Student Ambassador. The official handover ceremony was graced by the Principal, Vice Principal, and department heads, marking a significant step for our open-source initiatives.",
+            description: "In a proud moment for APSIT, Shreyash Narvekar was appointed as the Red Hat Academy Student Ambassador for 2024-2025. The official handover ceremony was graced by the Principal, Vice Principal, and department heads, marking a significant step for our open-source initiatives.",
             content: [redhatamb1, redhatamb2, redhatamb3, redhatamb4, redhatamb5],
-            alt: "Ceremony Image",
+            alt: "2024-2025 Ceremony Image",
             fit: 'contain'
         },
         {
