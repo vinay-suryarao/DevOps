@@ -23,5 +23,12 @@ dist-ssr
 *.sln
 *.sw?
 
-# Environment variables
+# Environment variables & secrets
 .env
+.env.*
+!.env.example
+*.env
+*.pem
+*.key
+*.cert
+*.crt

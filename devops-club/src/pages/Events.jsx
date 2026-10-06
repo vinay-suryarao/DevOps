@@ -1,8 +1,7 @@
 /* eslint-disable no-irregular-whitespace */
 /* eslint-disable no-unused-vars */
-import {React, useState, useRef, useEffect, useMemo } from 'react';
-import { collection, getDocs, query, orderBy } from "firebase/firestore";
-import { db } from '../firebaseConfig'; // Make sure this path is correct
+import { React, useState, useRef, useEffect, useMemo, useCallback } from 'react';
+import { getEventsListing, getEventById, registerForEvent, getCachedEventsListing } from '../db/neonService';
 // Filter icon hata diya gaya hai
 import { Calendar, Clock, MapPin, Globe, X, ArrowLeft, Download, Search, UserCheck } from 'lucide-react';
 
@@ -80,36 +79,190 @@ const CustomSelect = ({ id, options, value, onChange }) => {
     );
 };
 
-// --- Feedback Modal --- (No Changes)
+// --- Feedback Modal ---
 const FeedbackModal = ({ dynamicEvents, onClose }) => {
-    const [formData, setFormData] = useState({ name: '', email: '', moodleId: '', department: departments[0], event: dynamicEvents.length > 1 ? dynamicEvents[0] : "No upcoming events",  feedback: '' });
+    const defaultEvent = dynamicEvents.length > 1 ? dynamicEvents[1] : "Select Event";
+    const [formData, setFormData] = useState({ 
+        name: '', 
+        email: '', 
+        moodleId: '', 
+        department: departments[0], 
+        event: defaultEvent,  
+        feedback: '' 
+    });
     const [submitting, setSubmitting] = useState(false);
     const [submissionStatus, setSubmissionStatus] = useState(null);
+    const [statusMessage, setStatusMessage] = useState('');
     const [currentDate] = useState(new Date().toLocaleDateString('en-US', { year: 'numeric', month: 'long', day: 'numeric' }));
-    const handleChange = (e) => { const { id, value } = e.target; setFormData(prev => ({ ...prev, [id]: value })); };
-    const handleSelectChange = (id, value) => { setFormData(prev => ({ ...prev, [id]: value })); };
-    const handleSubmit = (e) => { e.preventDefault(); if (submitting || formData.event === "Select Event" || formData.department === "Select Your Department") { alert("Please select a valid event and department."); return; }; setSubmitting(true); setSubmissionStatus(null); const GOOGLE_SCRIPT_URL = import.meta.env.VITE_EVENTS_FEEDBACK_SCRIPT_URL; const dataToSubmit = new FormData(); dataToSubmit.append('Date', currentDate); dataToSubmit.append('Name', formData.name); dataToSubmit.append('Email', formData.email); dataToSubmit.append('MoodleID', formData.moodleId); dataToSubmit.append('Department', formData.department); dataToSubmit.append('Event', formData.event); dataToSubmit.append('Feedback', formData.feedback); fetch(GOOGLE_SCRIPT_URL, { method: 'POST', body: dataToSubmit }).then(res => res.json()).then(data => { if (data.result === 'success') { setSubmissionStatus('success'); setFormData({ name: '', email: '', moodleId: '', department: departments[0], event: dynamicEvents.length > 1 ? dynamicEvents[0] : "No upcoming events", feedback: '' }); setTimeout(() => { onClose(); }, 2000); } else { throw new Error(data.message || 'An unknown error occurred on the server.'); } }).catch(err => { console.error("Submission Error:", err); setSubmissionStatus('error'); }).finally(() => { setSubmitting(false); setTimeout(() => setSubmissionStatus(null), 5000); }); };
+
+    const handleChange = (e) => { 
+        const { id, value } = e.target; 
+        setFormData(prev => ({ ...prev, [id]: value })); 
+    };
+
+    const handleSelectChange = (id, value) => { 
+        setFormData(prev => ({ ...prev, [id]: value })); 
+    };
+
+    const handleSubmit = async (e) => { 
+        e.preventDefault(); 
+        if (submitting) return;
+
+        if (formData.event === "Select Event" || !formData.event) { 
+            alert("Please select a specific event from the dropdown."); 
+            return; 
+        }
+        if (formData.department === "Select Your Department" || !formData.department) { 
+            alert("Please select your department."); 
+            return; 
+        }
+
+        setSubmitting(true); 
+        setSubmissionStatus(null);
+        setStatusMessage('');
+
+        const GOOGLE_SCRIPT_URL = import.meta.env.VITE_EVENTS_FEEDBACK_SCRIPT_URL;
+        
+        if (!GOOGLE_SCRIPT_URL) {
+            setSubmitting(false);
+            setSubmissionStatus('error');
+            setStatusMessage('Feedback script URL is not configured. Please set VITE_EVENTS_FEEDBACK_SCRIPT_URL in .env.');
+            return;
+        }
+
+        const dataToSubmit = new FormData(); 
+        dataToSubmit.append('Date', currentDate); 
+        dataToSubmit.append('Name', formData.name); 
+        dataToSubmit.append('Email', formData.email); 
+        dataToSubmit.append('MoodleID', formData.moodleId); 
+        dataToSubmit.append('Department', formData.department); 
+        dataToSubmit.append('Event', formData.event); 
+        dataToSubmit.append('Feedback', formData.feedback); 
+
+        try {
+            const res = await fetch(GOOGLE_SCRIPT_URL, { 
+                method: 'POST', 
+                body: dataToSubmit 
+            });
+
+            if (!res.ok && res.status !== 0) {
+                if (res.status === 401) {
+                    throw new Error("HTTP 401: Google Apps Script requires 'Who has access: Anyone' in its deployment settings.");
+                }
+                throw new Error(`Server returned HTTP ${res.status}`);
+            }
+
+            const data = await res.json();
+            if (data.result === 'success') { 
+                setSubmissionStatus('success'); 
+                setStatusMessage('Thank you! Your feedback has been recorded.');
+                setFormData({ 
+                    name: '', 
+                    email: '', 
+                    moodleId: '', 
+                    department: departments[0], 
+                    event: defaultEvent, 
+                    feedback: '' 
+                }); 
+                setTimeout(() => { onClose(); }, 2000); 
+            } else { 
+                throw new Error(data.message || 'Unknown error returned by Apps Script.'); 
+            }
+        } catch (err) { 
+            console.error("Feedback Submission Error:", err); 
+            setSubmissionStatus('error'); 
+            setStatusMessage(
+                err.message?.includes('401') 
+                    ? "Deployment authorization error: Google Apps Script must be deployed with 'Who has access: Anyone'."
+                    : (err.message || 'Could not connect to Google Sheets. Please verify the Web App deployment.')
+            );
+        } finally { 
+            setSubmitting(false); 
+        } 
+    };
     
     return (
         <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
             <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-2xl w-full relative">
-                <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-slate-800"><X size={24} /></button>
+                <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-slate-800 transition-colors">
+                    <X size={24} />
+                </button>
                 <h2 className="text-3xl font-extrabold text-[#2a3f54] text-center mb-6">Share Your Feedback</h2>
                 <form onSubmit={handleSubmit} className="space-y-6">
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="relative"><UserIcon /><input type="text" id="name" placeholder="Your Name" value={formData.name} onChange={handleChange} required className="w-full pl-10 pr-4 py-3 bg-slate-100 border border-slate-300 rounded-lg" /></div>
-                        <div className="relative"><MailIcon /><input type="email" id="email" placeholder="Your Email" value={formData.email} onChange={handleChange} required className="w-full pl-10 pr-4 py-3 bg-slate-100 border border-slate-300 rounded-lg" /></div>
+                        <div className="relative">
+                            <UserIcon />
+                            <input 
+                                type="text" 
+                                id="name" 
+                                placeholder="Your Name" 
+                                value={formData.name} 
+                                onChange={handleChange} 
+                                required 
+                                className="w-full pl-10 pr-4 py-3 bg-slate-100 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                            />
+                        </div>
+                        <div className="relative">
+                            <MailIcon />
+                            <input 
+                                type="email" 
+                                id="email" 
+                                placeholder="Your Email" 
+                                value={formData.email} 
+                                onChange={handleChange} 
+                                required 
+                                className="w-full pl-10 pr-4 py-3 bg-slate-100 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                            />
+                        </div>
                     </div>
                     <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                        <div className="relative"><IdCardIcon /><input type="text" id="moodleId" placeholder="Moodle ID" value={formData.moodleId} onChange={handleChange} required className="w-full pl-10 pr-4 py-3 bg-slate-100 border border-slate-300 rounded-lg" /></div>
+                        <div className="relative">
+                            <IdCardIcon />
+                            <input 
+                                type="text" 
+                                id="moodleId" 
+                                placeholder="Moodle ID" 
+                                value={formData.moodleId} 
+                                onChange={handleChange} 
+                                required 
+                                className="w-full pl-10 pr-4 py-3 bg-slate-100 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none" 
+                            />
+                        </div>
                         <CustomSelect id="department" options={departments} value={formData.department} onChange={handleSelectChange} />
                     </div>
-                    <CustomSelect id="event" options={dynamicEvents} value={formData.event} onChange={handleSelectChange} />
-                    <textarea id="feedback" placeholder="Share your detailed feedback..." value={formData.feedback} onChange={handleChange} required rows="5" className="w-full px-4 py-3 bg-slate-100 border border-slate-300 rounded-lg"></textarea>
-                    <div className="text-center pt-4">
-                        <button type="submit" disabled={submitting} className="w-full md:w-auto font-bold text-lg text-white px-10 py-3 bg-slate-800 rounded-lg hover:bg-orange-500 disabled:bg-slate-400">{submitting ? 'Sending...' : 'Submit Feedback'}</button>
-                        {submissionStatus === 'success' && <p className="mt-4 text-green-600">✅ Success! Thank you for your feedback.</p>}
-                        {submissionStatus === 'error' && <p className="mt-4 text-red-600">❌ Error! Could not submit. Please try again.</p>}
+                    <div>
+                        <label className="block text-xs font-semibold text-slate-600 mb-1 text-left">Select Event</label>
+                        <CustomSelect id="event" options={dynamicEvents} value={formData.event} onChange={handleSelectChange} />
+                    </div>
+                    <textarea 
+                        id="feedback" 
+                        placeholder="Share your detailed feedback..." 
+                        value={formData.feedback} 
+                        onChange={handleChange} 
+                        required 
+                        rows="5" 
+                        className="w-full px-4 py-3 bg-slate-100 border border-slate-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:outline-none"
+                    ></textarea>
+                    
+                    {submissionStatus === 'success' && (
+                        <div className="p-3 bg-green-100 border border-green-300 text-green-700 rounded-lg text-sm text-center">
+                            ✅ {statusMessage || 'Success! Thank you for your feedback.'}
+                        </div>
+                    )}
+                    {submissionStatus === 'error' && (
+                        <div className="p-3 bg-red-100 border border-red-300 text-red-700 rounded-lg text-sm text-center">
+                            ❌ {statusMessage || 'Error! Could not submit. Please check configuration.'}
+                        </div>
+                    )}
+
+                    <div className="text-center pt-2">
+                        <button 
+                            type="submit" 
+                            disabled={submitting} 
+                            className="w-full md:w-auto font-bold text-lg text-white px-10 py-3 bg-slate-800 rounded-lg hover:bg-orange-500 transition-colors disabled:bg-slate-400 shadow-md"
+                        >
+                            {submitting ? 'Sending...' : 'Submit Feedback'}
+                        </button>
                     </div>
                 </form>
             </div>
@@ -117,32 +270,217 @@ const FeedbackModal = ({ dynamicEvents, onClose }) => {
     );
 };
 
-// --- Registration Form --- (No Changes)
+// --- Registration Form with Neon DB & Google Sheets Dual-Save ---
 const RegistrationForm = ({ event, onClose }) => {
     const [isSubmitted, setIsSubmitted] = useState(false);
     const [isSubmitting, setIsSubmitting] = useState(false);
-    const [formData, setFormData] = useState({ Event: event.name, FullName: '', Email: '', Phone: '', MoodleID: '', Semester: '', Branch: '', Division: '' });
-    const handleInputChange = (e) => { const { name, value } = e.target; setFormData(prev => ({ ...prev, [name]: value })); };
-    const handleSubmit = async (e) => { e.preventDefault(); setIsSubmitting(true); const scriptURL = import.meta.env.VITE_EVENTS_REGISTRATION_SCRIPT_URL; const dataForSheet = new FormData(); for (const key in formData) { dataForSheet.append(key, formData[key]); } try { const response = await fetch(scriptURL, { method: 'POST', body: dataForSheet }); const result = await response.json(); if (result.result === 'success') { setIsSubmitted(true); } else { throw new Error(result.message || "An error occurred on the server."); } } catch (error) { console.error('Error submitting form:', error); alert(`An error occurred during registration: ${error.message}`); } finally { setIsSubmitting(false); } };
-    return (<div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4"><div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full relative"><button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-slate-800"><X size={24} /></button>{isSubmitted ? (<div className="text-center"><h3 className="text-2xl font-bold text-blue-600 mb-4">Registration Confirmed!</h3><p className="text-slate-600 mb-2">Thank you for registering for <span className="font-semibold">{event.name}</span>.</p><button onClick={onClose} className="mt-6 bg-blue-500 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-600">Close</button></div>) : (<><div className="p-3 bg-slate-100 rounded-lg text-center mb-6"><p className="text-sm text-slate-600">You are registering for:</p><p className="font-bold text-lg text-blue-600">{event.name}</p></div><form onSubmit={handleSubmit} className="space-y-4"><div><label className="text-sm font-medium text-slate-700">Full Name</label><input type="text" name="FullName" value={formData.FullName} onChange={handleInputChange} required className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md" /></div><div><label className="text-sm font-medium text-slate-700">Email Address</label><input type="email" name="Email" value={formData.Email} onChange={handleInputChange} required className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md" /></div><div><label className="text-sm font-medium text-slate-700">Phone Number</label><input type="tel" name="Phone" value={formData.Phone} onChange={handleInputChange} required pattern="[0-9]{10}" className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md" /></div><div><label className="text-sm font-medium text-slate-700">Moodle ID</label><input type="text" name="MoodleID" value={formData.MoodleID} onChange={handleInputChange} required className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md" /></div><div className="grid grid-cols-1 sm:grid-cols-3 gap-4"><div><label className="text-sm font-medium text-slate-700">Semester</label><select name="Semester" value={formData.Semester} onChange={handleInputChange} required className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md"><option value="">Select</option>{[...Array(8).keys()].map(i => <option key={i+1} value={i+1}>{i+1}</option>)}</select></div><div><label className="text-sm font-medium text-slate-700">Branch</label><select name="Branch" value={formData.Branch} onChange={handleInputChange} required className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md"><option value="">Select</option><option value="Computer">Computer</option><option value="IT">IT</option><option value="AIML">AIML</option><option value="Data Science">Data Science</option><option value="Mechanical">Mechanical</option><option value="Civil">Civil</option></select></div><div><label className="text-sm font-medium text-slate-700">Division</label><select name="Division" value={formData.Division} onChange={handleInputChange} required className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md"><option value="">Select</option><option value="A">A</option><option value="B">B</option><option value="C">C</option></select></div></div><div className="text-right pt-4"><button type="submit" disabled={isSubmitting} className="inline-block bg-blue-500 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-600 disabled:bg-slate-400">{isSubmitting ? 'Submitting...' : 'Submit Registration'}</button></div></form></>)}</div></div>);
+    const [errorMessage, setErrorMessage] = useState('');
+    const [formData, setFormData] = useState({ 
+        Event: event.name, 
+        FullName: '', 
+        Email: '', 
+        Phone: '', 
+        MoodleID: '', 
+        Semester: '', 
+        Branch: '', 
+        Division: '' 
+    });
+
+    const handleInputChange = (e) => { 
+        const { name, value } = e.target; 
+        setFormData(prev => ({ ...prev, [name]: value })); 
+    };
+
+    const handleSubmit = async (e) => { 
+        e.preventDefault(); 
+        setIsSubmitting(true); 
+        setErrorMessage('');
+
+        try {
+            // 1. Save directly to Neon PostgreSQL Database
+            await registerForEvent({
+                eventId: event.id,
+                eventName: event.name,
+                fullName: formData.FullName,
+                email: formData.Email,
+                phone: formData.Phone,
+                moodleId: formData.MoodleID,
+                semester: formData.Semester,
+                branch: formData.Branch,
+                division: formData.Division,
+            });
+
+            // 2. Also send to Google Apps Script webhook
+            const scriptURL = import.meta.env.VITE_EVENTS_REGISTRATION_SCRIPT_URL;
+            if (scriptURL) {
+                const params = new URLSearchParams();
+                for (const key in formData) { 
+                    params.append(key, formData[key]); 
+                }
+                // Send with no-cors to prevent CORS/redirect errors from breaking the user experience
+                try {
+                    await fetch(scriptURL, { 
+                        method: 'POST', 
+                        mode: 'no-cors',
+                        headers: {
+                            'Content-Type': 'application/x-www-form-urlencoded',
+                        },
+                        body: params.toString() 
+                    });
+                } catch (sheetErr) {
+                    console.warn('Google Sheets background sync notice:', sheetErr);
+                }
+            }
+
+            setIsSubmitted(true);
+        } catch (error) { 
+            console.error('Error submitting registration:', error); 
+            setErrorMessage(error.message || "An error occurred during registration. Please try again.");
+            alert(`An error occurred during registration: ${error.message}`); 
+        } finally { 
+            setIsSubmitting(false); 
+        } 
+    };
+
+    return (
+        <div className="fixed inset-0 bg-black bg-opacity-60 flex justify-center items-center z-50 p-4">
+            <div className="bg-white rounded-2xl shadow-2xl p-8 max-w-lg w-full relative">
+                <button onClick={onClose} className="absolute top-4 right-4 text-slate-500 hover:text-slate-800">
+                    <X size={24} />
+                </button>
+                {isSubmitted ? (
+                    <div className="text-center py-4">
+                        <div className="w-16 h-16 bg-green-100 text-green-600 rounded-full flex items-center justify-center mx-auto mb-4 text-3xl font-bold">
+                            ✓
+                        </div>
+                        <h3 className="text-2xl font-bold text-green-600 mb-2">Registration Confirmed!</h3>
+                        <p className="text-slate-600 mb-2">Thank you for registering for <span className="font-semibold text-slate-800">{event.name}</span>.</p>
+                        <p className="text-xs text-slate-400 mb-6">Your registration has been securely stored in the database.</p>
+                        <button onClick={onClose} className="bg-blue-500 text-white font-bold py-2.5 px-8 rounded-full hover:bg-blue-600 transition-colors shadow-md">
+                            Close
+                        </button>
+                    </div>
+                ) : (
+                    <>
+                        <div className="p-3 bg-slate-100 rounded-lg text-center mb-6">
+                            <p className="text-sm text-slate-600">You are registering for:</p>
+                            <p className="font-bold text-lg text-blue-600">{event.name}</p>
+                        </div>
+                        {errorMessage && (
+                            <div className="p-3 bg-red-100 border border-red-300 text-red-700 rounded-lg mb-4 text-sm">
+                                {errorMessage}
+                            </div>
+                        )}
+                        <form onSubmit={handleSubmit} className="space-y-4">
+                            <div>
+                                <label className="text-sm font-medium text-slate-700">Full Name</label>
+                                <input type="text" name="FullName" value={formData.FullName} onChange={handleInputChange} required className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md" />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-slate-700">Email Address</label>
+                                <input type="email" name="Email" value={formData.Email} onChange={handleInputChange} required className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md" />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-slate-700">Phone Number</label>
+                                <input type="tel" name="Phone" value={formData.Phone} onChange={handleInputChange} required pattern="[0-9]{10}" className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md" />
+                            </div>
+                            <div>
+                                <label className="text-sm font-medium text-slate-700">Moodle ID</label>
+                                <input type="text" name="MoodleID" value={formData.MoodleID} onChange={handleInputChange} required className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md" />
+                            </div>
+                            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+                                <div>
+                                    <label className="text-sm font-medium text-slate-700">Semester</label>
+                                    <select name="Semester" value={formData.Semester} onChange={handleInputChange} required className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md">
+                                        <option value="">Select</option>
+                                        {[...Array(8).keys()].map(i => <option key={i+1} value={i+1}>{i+1}</option>)}
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-slate-700">Branch</label>
+                                    <select name="Branch" value={formData.Branch} onChange={handleInputChange} required className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md">
+                                        <option value="">Select</option>
+                                        <option value="Computer">Computer</option>
+                                        <option value="IT">IT</option>
+                                        <option value="AIML">AIML</option>
+                                        <option value="Data Science">Data Science</option>
+                                        <option value="Mechanical">Mechanical</option>
+                                        <option value="Civil">Civil</option>
+                                    </select>
+                                </div>
+                                <div>
+                                    <label className="text-sm font-medium text-slate-700">Division</label>
+                                    <select name="Division" value={formData.Division} onChange={handleInputChange} required className="mt-1 block w-full px-3 py-2 border border-slate-300 rounded-md">
+                                        <option value="">Select</option>
+                                        <option value="A">A</option>
+                                        <option value="B">B</option>
+                                        <option value="C">C</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="text-right pt-4">
+                                <button type="submit" disabled={isSubmitting} className="inline-block bg-blue-500 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-600 disabled:bg-slate-400">
+                                    {isSubmitting ? 'Submitting...' : 'Submit Registration'}
+                                </button>
+                            </div>
+                        </form>
+                    </>
+                )}
+            </div>
+        </div>
+    );
 };
 
 // --- Child Components for Displaying Events --- (No Changes)
 const EventCard = ({ event, onRegister }) => (
-    <div className="bg-white rounded-2xl shadow-xl flex flex-col transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl"><img src={event.posterUrl} alt={event.name} className="w-full h-48 object-cover rounded-t-2xl" onError={(e) => { e.target.src = 'https://placehold.co/600x400/2a3f54/f97316?text=Event'; }} /><div className="p-6 flex flex-col flex-grow"><h3 className="text-xl font-bold text-orange-500 mb-2">{event.name}</h3><div className="border-t border-slate-200 pt-4 space-y-2 text-sm text-slate-500"><p className="flex items-center"><Calendar className="w-4 h-4 mr-2 text-blue-500" /> {new Date(event.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>{event.time && <p className="flex items-center"><Clock className="w-4 h-4 mr-2 text-blue-500" /> {event.time}</p>}<p className="flex items-center">{event.mode === 'Offline' ? <MapPin className="w-4 h-4 mr-2 text-blue-500" /> : <Globe className="w-4 h-4 mr-2 text-blue-500" />} {event.location}</p></div><div className="mt-auto pt-6 text-center"><button onClick={onRegister} className="inline-block bg-blue-500 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-600 transition-colors duration-300 shadow-lg">Register Now</button></div></div></div>
+    <div className="bg-white rounded-2xl shadow-xl flex flex-col transition-transform duration-300 hover:-translate-y-2 hover:shadow-2xl"><img src={event.posterUrl} alt={event.name} className="w-full h-48 object-cover rounded-t-2xl" loading="eager" decoding="async" onError={(e) => { e.target.src = 'https://placehold.co/600x400/2a3f54/f97316?text=Event'; }} /><div className="p-6 flex flex-col flex-grow"><h3 className="text-xl font-bold text-orange-500 mb-2">{event.name}</h3><div className="border-t border-slate-200 pt-4 space-y-2 text-sm text-slate-500"><p className="flex items-center"><Calendar className="w-4 h-4 mr-2 text-blue-500" /> {new Date(event.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'long', year: 'numeric' })}</p>{event.time && <p className="flex items-center"><Clock className="w-4 h-4 mr-2 text-blue-500" /> {event.time}</p>}<p className="flex items-center">{event.mode === 'Offline' ? <MapPin className="w-4 h-4 mr-2 text-blue-500" /> : <Globe className="w-4 h-4 mr-2 text-blue-500" />} {event.location}</p></div><div className="mt-auto pt-6 text-center"><button onClick={onRegister} className="inline-block bg-blue-500 text-white font-bold py-2 px-6 rounded-full hover:bg-blue-600 transition-colors duration-300 shadow-lg">Register Now</button></div></div></div>
 );
 
-const CompactPastEventCard = ({ event, onViewMore }) => (
-    <div className="bg-slate-50 rounded-xl shadow-lg flex flex-col transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden"><img src={event.cardImageUrl} alt={event.name} className="w-full h-40 object-cover" onError={(e) => { e.target.src = 'https://placehold.co/400x400/9ca3af/ffffff?text=Past+Event'; }} /><div className="p-4 flex flex-col flex-grow text-left w-full"><h3 className="font-bold text-md text-orange-500 mb-1 truncate">{event.name}</h3><p className="flex items-center text-xs text-slate-600 mb-4"><Calendar className="w-3 h-3 mr-1.5" /> {new Date(event.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p><div className="mt-auto"><button onClick={onViewMore} className="w-full text-xs bg-blue-500 text-white font-bold py-2 px-4 rounded-full hover:bg-blue-600">View More</button></div></div></div>
+const CompactPastEventCard = ({ event, onViewMore, onPrefetch }) => (
+    <div 
+        onMouseEnter={() => onPrefetch && onPrefetch(event.id)}
+        className="bg-slate-50 rounded-xl shadow-lg flex flex-col transition-transform duration-300 hover:-translate-y-1 hover:shadow-xl overflow-hidden"
+    >
+        <img src={event.cardImageUrl} alt={event.name} className="w-full h-40 object-cover" loading="lazy" decoding="async" onError={(e) => { e.target.src = 'https://placehold.co/400x400/9ca3af/ffffff?text=Past+Event'; }} />
+        <div className="p-4 flex flex-col flex-grow text-left w-full">
+            <h3 className="font-bold text-md text-orange-500 mb-1 truncate">{event.name}</h3>
+            <p className="flex items-center text-xs text-slate-600 mb-4"><Calendar className="w-3 h-3 mr-1.5" /> {new Date(event.date).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' })}</p>
+            <div className="mt-auto">
+                <button 
+                    onClick={onViewMore}
+                    onMouseEnter={() => onPrefetch && onPrefetch(event.id)}
+                    className="w-full text-xs bg-blue-500 text-white font-bold py-2 px-4 rounded-full hover:bg-blue-600 transition-colors"
+                >
+                    View More
+                </button>
+            </div>
+        </div>
+    </div>
 );
 
-const PastEventDetail = ({ event, onBack }) => (
-    <div className="relative z-10 container mx-auto px-4 w-full max-w-6xl">
+const PastEventDetail = ({ event, onBack, loadingGallery }) => {
+    // Use posterUrl from full event, fall back to cardImageUrl from listing (available immediately)
+    const heroSrc = event.posterUrl || event.cardImageUrl || '';
+    return (
+    <div className="relative z-10 container mx-auto px-4 w-full max-w-6xl animate-fade-in">
         <button onClick={onBack} className="flex items-center text-blue-500 hover:text-blue-700 font-semibold mb-8">
             <ArrowLeft size={20} className="mr-2" /> Back to All Events
         </button>
         <div className="bg-white rounded-2xl shadow-2xl overflow-hidden">
-            <img src={event.posterUrl} alt={event.name} className="w-full h-64 md:h-96 object-cover" onError={(e) => { e.target.src = 'https://placehold.co/1200x800/2a3f54/ffffff?text=Event+Poster'; }}/>
+            {heroSrc ? (
+                <img 
+                    src={heroSrc} 
+                    alt={event.name} 
+                    className="w-full h-64 md:h-96 object-cover" 
+                    loading="eager"
+                    decoding="async"
+                    onError={(e) => { e.target.src = 'https://placehold.co/1200x800/2a3f54/ffffff?text=Event+Poster'; }}
+                />
+            ) : (
+                <div className="w-full h-64 md:h-96 bg-slate-200 animate-pulse flex items-center justify-center">
+                    <span className="text-slate-400 text-sm">Loading image...</span>
+                </div>
+            )}
             <div className="p-8 md:p-12">
                 <h2 className="text-4xl font-extrabold text-[#2a3f54] mb-4">{event.name}</h2>
                 <div className="flex flex-wrap gap-x-8 gap-y-4 mb-8 text-slate-500">
@@ -174,25 +512,44 @@ const PastEventDetail = ({ event, onBack }) => (
                         </a>
                     </div>
                 )}
-                {event.galleryImages && event.galleryImages.length > 0 && (
+                {loadingGallery ? (
                     <div className="border-t border-slate-200 pt-12">
+                        <div className="flex items-center justify-center gap-3 mb-8">
+                            <div className="w-5 h-5 border-2 border-blue-500 border-t-transparent rounded-full animate-spin"></div>
+                            <h3 className="text-2xl font-bold text-[#2a3f54]">Loading Event Gallery...</h3>
+                        </div>
+                        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 animate-pulse">
+                            {[1, 2, 3].map((i) => (
+                                <div key={i} className="w-full h-56 bg-slate-200 rounded-lg"></div>
+                            ))}
+                        </div>
+                    </div>
+                ) : event.galleryImages && event.galleryImages.length > 0 ? (
+                    <div className="border-t border-slate-200 pt-12 animate-fade-in">
                         <h3 className="text-3xl font-bold text-center text-[#2a3f54] mb-8">Event Gallery</h3>
                         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
                             {event.galleryImages.map((imgSrc, index) => 
                                 <div key={index}>
-                                    <img src={imgSrc} alt={`${event.name} gallery image ${index + 1}`} className="w-full h-56 object-cover rounded-lg shadow-md" />
+                                    <img 
+                                        src={imgSrc} 
+                                        alt={`${event.name} gallery image ${index + 1}`} 
+                                        className="w-full h-56 object-cover rounded-lg shadow-md hover:scale-[1.02] transition-transform duration-200" 
+                                        loading={index < 3 ? 'eager' : 'lazy'}
+                                        decoding="async"
+                                    />
                                 </div>
                             )}
                         </div>
                     </div>
-                )}
+                ) : null}
             </div>
         </div>
     </div>
-);
+    );
+};
 
 // --- Main View Component --- (No Changes)
-const MainEventsView = ({ upcomingEvents, pastEvents, onRegister, onViewMore, totalEventsCount, filteredEventsCount }) => (
+const MainEventsView = ({ upcomingEvents, pastEvents, onRegister, onViewMore, onPrefetch, totalEventsCount, filteredEventsCount }) => (
     <>
         {totalEventsCount > 0 && filteredEventsCount === 0 && (
              <div className="mb-12 max-w-2xl mx-auto bg-yellow-100/80 border border-yellow-300 text-yellow-800 px-6 py-4 rounded-lg">
@@ -212,7 +569,14 @@ const MainEventsView = ({ upcomingEvents, pastEvents, onRegister, onViewMore, to
         <h2 className="text-4xl font-extrabold text-[#2a3f54] drop-shadow-lg mt-24 mb-12">Past Events Gallery</h2>
         {pastEvents.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-7xl mx-auto">
-                {pastEvents.map((event) => <CompactPastEventCard key={event.id} event={event} onViewMore={() => onViewMore(event)} />)}
+                {pastEvents.map((event) => (
+                    <CompactPastEventCard 
+                        key={event.id} 
+                        event={event} 
+                        onViewMore={() => onViewMore(event)} 
+                        onPrefetch={onPrefetch}
+                    />
+                ))}
             </div>
         ) : (
              <p className="text-slate-500 bg-white/50 rounded-lg p-8">No past events to display.</p>
@@ -220,35 +584,112 @@ const MainEventsView = ({ upcomingEvents, pastEvents, onRegister, onViewMore, to
     </>
 );
 
+// --- Skeleton Placeholder Grid for Instant First Load ---
+const EventsSkeletonView = () => (
+    <div className="relative z-10 container mx-auto text-center px-4 sm:px-6 lg:px-8 animate-pulse">
+        {/* Search Bar Skeleton */}
+        <div className="w-full max-w-4xl mx-auto mb-12 flex items-center justify-center gap-x-3 sm:gap-x-4">
+            <div className="h-[50px] bg-white/80 rounded-full flex-grow shadow-lg"></div>
+            <div className="h-[50px] w-28 bg-orange-400/80 rounded-full shadow-lg"></div>
+        </div>
+
+        {/* Upcoming Header & Skeleton */}
+        <h2 className="text-4xl font-extrabold text-[#2a3f54] drop-shadow-lg mb-12">Upcoming Events & Workshops</h2>
+        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-8 max-w-7xl mx-auto mb-20">
+            {[1].map((i) => (
+                <div key={i} className="bg-white rounded-2xl shadow-xl overflow-hidden text-left flex flex-col">
+                    <div className="w-full h-48 bg-slate-200"></div>
+                    <div className="p-6 space-y-4">
+                        <div className="h-6 bg-slate-200 rounded w-3/4"></div>
+                        <div className="h-4 bg-slate-200 rounded w-1/2"></div>
+                        <div className="h-10 bg-slate-200 rounded-full w-36 mx-auto mt-6"></div>
+                    </div>
+                </div>
+            ))}
+        </div>
+
+        {/* Past Events Header & Skeleton */}
+        <h2 className="text-4xl font-extrabold text-[#2a3f54] drop-shadow-lg mb-12">Past Events Gallery</h2>
+        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 gap-6 max-w-7xl mx-auto">
+            {[1, 2, 3, 4, 5, 6, 7, 8].map((i) => (
+                <div key={i} className="bg-slate-50 rounded-xl shadow-lg overflow-hidden flex flex-col">
+                    <div className="w-full h-40 bg-slate-200"></div>
+                    <div className="p-4 space-y-3">
+                        <div className="h-4 bg-slate-200 rounded w-4/5"></div>
+                        <div className="h-3 bg-slate-200 rounded w-1/2"></div>
+                        <div className="h-8 bg-slate-200 rounded-full w-full mt-4"></div>
+                    </div>
+                </div>
+            ))}
+        </div>
+    </div>
+);
+
 // --- Parent Component ---
 export default function Events() {
-    const [allEvents, setAllEvents] = useState([]);
-    const [loading, setLoading] = useState(true);
+    // Initialize from sync cache so back-navigation shows events instantly (0ms)
+    const cachedOnMount = getCachedEventsListing();
+    const hasCache = cachedOnMount && cachedOnMount.length > 0;
+    const [allEvents, setAllEvents] = useState(hasCache ? cachedOnMount : []);
+    const [loading, setLoading] = useState(!hasCache);
     const [isFormOpen, setIsFormOpen] = useState(false);
     const [selectedEvent, setSelectedEvent] = useState(null);
     const [viewingPastEvent, setViewingPastEvent] = useState(null);
     const [isFeedbackFormOpen, setIsFeedbackFormOpen] = useState(false);
     
-    // Filter logic ab simplified hai
+    const eventCache = useRef({});
+    const [loadingGallery, setLoadingGallery] = useState(false);
+    
+    // Filter logic
     const initialFilters = { search: '' };
     const [activeFilters, setActiveFilters] = useState(initialFilters);
     const [tempFilters, setTempFilters] = useState(initialFilters);
 
+    // Prefetch full event details (gallery) into in-memory cache
+    const prefetchEvent = useCallback(async (id) => {
+        if (!id || eventCache.current[id]) return eventCache.current[id];
+        try {
+            const fullEvent = await getEventById(id);
+            if (fullEvent) {
+                eventCache.current[id] = fullEvent;
+            }
+            return fullEvent;
+        } catch (e) {
+            console.warn('Prefetch failed for event', id, e);
+            return null;
+        }
+    }, []);
+
     useEffect(() => {
+        let isMounted = true;
         const fetchEvents = async () => {
-            setLoading(true);
+            const cached = getCachedEventsListing();
+            if (!cached || cached.length === 0) {
+                setLoading(true);
+            }
             try {
-                const q = query(collection(db, 'events'), orderBy('date', 'desc'));
-                const querySnapshot = await getDocs(q);
-                const eventsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
-                setAllEvents(eventsData);
+                // getEventsListing() checks memory & IndexedDB first, then network
+                const eventsData = await getEventsListing();
+                if (isMounted) {
+                    setAllEvents(eventsData);
+                    setLoading(false);
+                }
+
+                // Background prefetch all past event galleries so "View More" is instant
+                const past = eventsData.filter(e => e.type === 'past');
+                if (past.length > 0) {
+                    setTimeout(() => {
+                        past.forEach(p => prefetchEvent(p.id));
+                    }, 200);
+                }
             } catch (error) {
                 console.error("Error fetching events: ", error);
+                if (isMounted) setLoading(false);
             }
-            setLoading(false);
         };
         fetchEvents();
-    }, []);
+        return () => { isMounted = false; };
+    }, [prefetchEvent]);
 
     useEffect(() => {
         if (viewingPastEvent) {
@@ -274,7 +715,30 @@ export default function Events() {
 
     const handleRegisterClick = (event) => { setSelectedEvent(event); setIsFormOpen(true); };
     const handleCloseForm = () => { setIsFormOpen(false); setSelectedEvent(null); };
-    const handleViewMoreClick = (event) => { setViewingPastEvent(event); };
+
+    const handleViewMoreClick = (event) => {
+        // INSTANT NAVIGATION (0ms delay): Never block page navigation!
+        // The listing already has name, date, time, speaker, brief, posterUrl, reportUrl
+        const cached = eventCache.current[event.id];
+        if (cached && cached.galleryImages?.length > 0) {
+            setViewingPastEvent(cached);
+            setLoadingGallery(false);
+            return;
+        }
+
+        // Show event detail immediately with what we have
+        setViewingPastEvent(event);
+        setLoadingGallery(true);
+
+        // Fetch gallery in background without blocking the UI
+        prefetchEvent(event.id).then((fullEvent) => {
+            if (fullEvent) {
+                setViewingPastEvent(fullEvent);
+            }
+            setLoadingGallery(false);
+        });
+    };
+
     const handleBackToList = () => { setViewingPastEvent(null); };
     
     const handleOpenFeedbackForm = () => setIsFeedbackFormOpen(true);
@@ -285,14 +749,14 @@ export default function Events() {
 
     const upcomingEvents = filteredEvents.filter(e => e.type === 'upcoming' && new Date(e.date) >= today);
     const pastEvents = filteredEvents.filter(e => e.type === 'past');
-    const feedbackFormEventsList = ["Select Event", ...allEvents.filter(e => e.type === 'upcoming' && new Date(e.date) >= today).map(e => e.name)];
+    const feedbackFormEventsList = ["Select Event", ...Array.from(new Set(allEvents.map(e => e.name).filter(Boolean)))];
 
     const renderContent = () => {
-        if (loading) {
-            return <div className="text-center py-20 text-xl text-slate-600 z-10">Loading Events...</div>;
+        if (loading && allEvents.length === 0) {
+            return <EventsSkeletonView />;
         }
         if (viewingPastEvent) {
-            return <PastEventDetail event={viewingPastEvent} onBack={handleBackToList} />;
+            return <PastEventDetail event={viewingPastEvent} onBack={handleBackToList} loadingGallery={loadingGallery} />;
         }
         return (
             <div className="relative z-10 container mx-auto text-center px-4 sm:px-6 lg:px-8">
@@ -307,6 +771,7 @@ export default function Events() {
                     pastEvents={pastEvents}
                     onRegister={handleRegisterClick}
                     onViewMore={handleViewMoreClick}
+                    onPrefetch={prefetchEvent}
                     totalEventsCount={allEvents.length}
                     filteredEventsCount={filteredEvents.length}
                 />

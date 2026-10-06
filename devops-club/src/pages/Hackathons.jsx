@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { collection, getDocs, query, orderBy, where } from "firebase/firestore";
-import { db } from '../firebaseConfig';
+import { getHackathons } from '../db/neonService';
 import { Users } from 'lucide-react'; // Added Icon for Team Name
 
 const googleScriptUrl = import.meta.env.VITE_HACKATHON_REGISTRATION_SCRIPT_URL;
@@ -141,9 +140,8 @@ export default function Hackathons() {
     const fetchHackathons = async () => {
       setLoading(true);
       try {
-        const q = query(collection(db, 'hackathons'), where("isEnabled", "==", true), orderBy('createdAt', 'desc'));
-        const querySnapshot = await getDocs(q);
-        setHackathons(querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() })));
+        const data = await getHackathons(true);
+        setHackathons(data);
       } catch (error) {
         console.error("Error fetching hackathons: ", error);
       }
@@ -203,7 +201,7 @@ export default function Hackathons() {
 
 // --- UPDATED Registration Modal Component ---
 const RegistrationModal = ({ hackathon, onClose }) => {
-  const teamSize = hackathon.teamSize || 4;
+  const teamSize = parseInt(hackathon.teamSize, 10) || 4;
   const createInitialState = () => Array.from({ length: teamSize }, () => ({ name: '', college: '', email: '', contactNumber: '' }));
 
   const [members, setMembers] = useState(createInitialState());
@@ -234,6 +232,11 @@ const RegistrationModal = ({ hackathon, onClose }) => {
         return;
     }
 
+    if (!googleScriptUrl) {
+      setRegStatus({ submitting: false, message: 'Google Apps Script URL is missing in .env (VITE_HACKATHON_REGISTRATION_SCRIPT_URL).' });
+      return;
+    }
+
     try {
       const checkUrl = `${googleScriptUrl}?emails=${encodeURIComponent(allEmails.join(','))}&hackathonName=${encodeURIComponent(hackathon.name)}`;
       
@@ -250,7 +253,10 @@ const RegistrationModal = ({ hackathon, onClose }) => {
       }
 
     } catch (error) {
-      setRegStatus({ submitting: false, message: `Verification Error: ${error.message}` });
+      setRegStatus({ 
+        submitting: false, 
+        message: `Verification Error: ${error.message}. Make sure your Apps Script Web App is deployed with "Who has access: Anyone".` 
+      });
       return;
     }
 

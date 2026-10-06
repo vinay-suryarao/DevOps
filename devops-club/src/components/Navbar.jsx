@@ -1,18 +1,29 @@
-import { useState } from "react"; // 1. 'useState' import kiya gaya hai menu ko manage karne ke liye
+import { useState, useEffect } from "react";
 import { NavLink } from "react-router-dom";
 import logo from "../assets/logo.png";
-// 2. 'Menu' aur 'X' icons import kiye gaye hain mobile button ke liye
 import { ShieldCheck, Menu, X } from 'lucide-react';
+import { getEventsListing } from '../db/neonService';
 
 export default function Navbar() {
-  // 3. Mobile menu ko open/close karne ke liye state banaya gaya hai
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  // Nav links ko ek array me daal diya hai taaki code repeat na ho
+  // Silently pre-warm events in memory & IndexedDB 600ms after app mounts
+  useEffect(() => {
+    const timer = setTimeout(() => {
+      getEventsListing().catch(() => {});
+    }, 600);
+    return () => clearTimeout(timer);
+  }, []);
+
+  // Prefetch events data on hover as well for immediate responsiveness
+  const handleEventsPrefetch = () => {
+    getEventsListing().catch(() => {});
+  };
+
   const navLinks = [
     { to: "/", text: "Home" },
     { to: "/about", text: "About" },
-    { to: "/events", text: "Events" },
+    { to: "/events", text: "Events", onMouseEnter: handleEventsPrefetch },
     { to: "/connect", text: "Connect" },
     { to: "/newsletters", text: "Bulletins" },
     { to: "/hackathons", text: "Hackathons" },
@@ -50,6 +61,7 @@ export default function Navbar() {
             <NavLink
               key={link.to}
               to={link.to}
+              onMouseEnter={link.onMouseEnter}
               className={({ isActive }) =>
                 `transition-colors duration-300 ${
                   isActive

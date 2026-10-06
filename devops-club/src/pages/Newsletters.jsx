@@ -1,6 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { collection, query, onSnapshot, orderBy } from 'firebase/firestore';
-import { db } from '../firebaseConfig';
+import { subscribeAnnouncements } from '../db/neonService';
 import { FileText, Loader, Search } from 'lucide-react';
 
 // Background component (Replaced)
@@ -131,9 +130,7 @@ export default function Newsletters() {
     const [filteredAnnouncements, setFilteredAnnouncements] = useState([]);
 
     useEffect(() => {
-        const q = query(collection(db, "announcements"), orderBy("createdAt", "desc"));
-        const unsubscribe = onSnapshot(q, (querySnapshot) => {
-            const announcementsData = querySnapshot.docs.map(doc => ({ id: doc.id, ...doc.data() }));
+        const unsubscribe = subscribeAnnouncements((announcementsData) => {
             setAnnouncements(announcementsData);
             setLoading(false);
         }, (error) => {

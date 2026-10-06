@@ -1,0 +1,43 @@
+# Environment variables & secrets (Never commit these!)
+.env
+.env.*
+!.env.example
+*.env
+*.pem
+*.key
+*.cert
+*.crt
+
+# Dependencies
+node_modules/
+devops-club/node_modules/
+
+# Production builds
+dist/
+dist-ssr/
+build/
+devops-club/dist/
+
+# Logs
+logs/
+*.log
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Editor & OS files
+.vscode/*
+!.vscode/extensions.json
+.idea/
+.DS_Store
+Thumbs.db
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+
+# Local caches
+.eslintcache
+.cache/
