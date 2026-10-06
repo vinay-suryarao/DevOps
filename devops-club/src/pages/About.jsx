@@ -44,6 +44,26 @@ import Intern4 from '../assets/reg4.jpg';
 import Intern5 from '../assets/reg5.jpg';
 import Intern6 from '../assets/reg6.jpg';
 
+//HEads
+
+import Technical_Ayush from '../assets/apsit-26-27/Ayush_Pandav.jpg';
+import Design_Maaz from '../assets/apsit-26-27/Maaz_Mukadam.png';
+import Literature_Raj from '../assets/apsit-26-27/RAJ_PURANIK.jpg';
+import Publicity_Tanushree from '../assets/apsit-26-27/Tanushree.jpeg';
+import Event_Snehal from '../assets/apsit-26-27/Snehal_Jadhav.png';
+import Photography_Sairaj from '../assets/apsit-26-27/Sairaj_Lad.png';
+
+//co heads
+
+// Co-Heads
+import TechnicalCoHead_Arju from '../assets/apsit-26-27/Arju_Pandey.png';
+import EventCoHead_Piyush from '../assets/apsit-26-27/Piyush_Patil.jpeg';
+import LiteratureCoHead_Raj from '../assets/apsit-26-27/RAJ_PURANIK.jpg';
+import CinematographyCoHead_Om from '../assets/apsit-26-27/OmJadhav.png';
+import PublicityCoHead_Nikhil from '../assets/apsit-26-27/Nikhil_Jain.png';
+import LiteratureCoHead_Leher from '../assets/apsit-26-27/Laher_Boricha.jpg';
+
+
 const CustomStyles = () => (
   <style>{`
     @keyframes fade-in-up {
@@ -358,32 +378,26 @@ const About = () => {
   const pageWrapperRef = useRef(null);
 
   const mentorsData = [
-    { name: 'Shreyash Narvekar', designation: 'President\nTechnical Team', photoUrl: PresidentShreyash },
-    { name: 'Akshata Khandekar', designation: 'Design Team', photoUrl: DesignAkshata },
-    { name: 'Anubhav Singh', designation: 'Literature Team', photoUrl: LiteratureAnubhav },
-    { name: 'Harsh Tambade', designation: 'Publicity Team', photoUrl: PublicityHarsh },
-    { name: 'Shivam Sharma', designation: 'Photography Team', photoUrl: PhotographyShivam },
-    { name: 'Shubham Shelake', designation: 'Cinematography Team', photoUrl: CinematographyShubham },
+    { name: 'Vinay Suryarao', designation: 'President', photoUrl: TechnicalVinay },
+    { name: 'Ismaeel Shaikh', designation: 'Vice President', photoUrl: Technicalcohead_Ismaeel },
+    { name: 'Aptab Shaikh', designation: 'Event Mentor', photoUrl: EventCohead_Aptab },
+    { name: 'Rehan Shaikh', designation: 'Publicity Mentor', photoUrl: PublicityRehan },
+    { name: 'Deep Varkute', designation: 'Design / Media Mentor', photoUrl: Deep },
   ];
   const headsData = [
-    { name: 'Vinay Suryarao', designation: 'Technical Team', photoUrl: TechnicalVinay },
-    { name: 'Ishita Singh', designation: 'Design Team', photoUrl: DesignIshita },
-    { name: 'Varunkumar Lysetti', designation: 'Literature Team', photoUrl: LiteratureVarunkumar },
-    { name: 'Rehan Shaikh', designation: 'Publicity Team', photoUrl: PublicityRehan },
-    { name: 'Sayyeda Rumiza', designation: 'Event Management Team', photoUrl: EventManagementRumiza },
-    { name: 'Deep Varkute', designation: 'Photography & Cinematography Team', photoUrl: Deep },
+    { name: 'Ayush Pandav', designation: 'Technical Team', photoUrl: Technical_Ayush },
+    { name: 'Maaz Mukadam', designation: 'Design Team', photoUrl: Design_Maaz },
+    { name: 'Raj Puranik', designation: 'Literature Team', photoUrl: Literature_Raj },
+    { name: 'Tanushree Gabhane', designation: 'Publicity Team', photoUrl: Publicity_Tanushree },
+    { name: 'Snehal Jadhav', designation: 'Event Management Team', photoUrl: Event_Snehal },
+    { name: 'Parth Joshi', designation: 'Media Team', photoUrl: Cinematographycohead_Parth },
   ];
   const coHeadsData = [
-    { name: 'Ismaeel Shaikh', designation: 'Technical Co-Head', photoUrl: Technicalcohead_Ismaeel },
-    { name: 'Aptab Shaikh', designation: 'Event Management Co-Head', photoUrl: EventCohead_Aptab },
-    { name: 'Raj Puranik', designation: 'Literature Co-Head', photoUrl: Literaturecohead_Raj },
-    { name: 'Aarya Nichal', designation: 'Cinematography Co-Head', photoUrl: Cinematographycohead_Aarya },
-    { name: 'Tanushree Gabhane', designation: 'Publicity Co-Head', photoUrl: Publicitycohead_Tanushree },
-    { name: 'Chitresh Poojary', designation: 'Technical Co-Head', photoUrl: Technicalcohead_Chitresh },
-    { name: 'Madhura Zambare', designation: 'Design Co-Head', photoUrl: Designcohead_Madhura },
-    { name: 'Kanksha Vanjare', designation: 'Literature Co-Head', photoUrl: Literaturecohead_Kanksha },
-    { name: 'Parth Joshi', designation: 'Cinematography Co-Head', photoUrl: Cinematographycohead_Parth },
-    { name: 'Shivansh Shukla', designation: 'Publicity Co-Head', photoUrl: Publicitycohead_Shivansh },
+    { name: 'Arju Pandey', designation: 'Technical Co-Head', photoUrl: TechnicalCoHead_Arju },
+    { name: 'Piyush Patil', designation: 'Design Co-Head', photoUrl: EventCoHead_Piyush },
+    { name: 'Om Jadhav', designation: 'Cinematography Co-Head', photoUrl: CinematographyCoHead_Om },
+    { name: 'Nikhil Jain', designation: 'Publicity Co-Head', photoUrl: PublicityCoHead_Nikhil },
+    { name: 'Leher Boricha', designation: 'Literature Co-Head', photoUrl: LiteratureCoHead_Leher },
   ];
 
   return (

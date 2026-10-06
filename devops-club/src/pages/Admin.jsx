@@ -142,7 +142,7 @@ const LoginForm = () => {
             <div className="w-full max-w-md p-8 space-y-6 bg-white rounded-2xl shadow-xl">
                 <div className="text-center">
                     <h1 className="text-3xl font-bold text-slate-800">Admin Login</h1>
-                    <p className="text-slate-500">Access the central dashboard (Neon DB).</p>
+                    <p className="text-slate-500">Access the central dashboard.</p>
                 </div>
                 <form onSubmit={handleLogin} className="space-y-6 mt-6">
                     <div className="relative">
