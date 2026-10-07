@@ -142,17 +142,43 @@ import { idbGet, idbSet, idbDelete, idbClear } from './indexedDbCache.js';
 let eventsListingCache = null;
 let eventsListingCacheTime = 0;
 let eventsListingInFlight = null;
+// How long in-memory cache is considered fresh (used to avoid redundant network fetches within one session)
 const EVENTS_CACHE_TTL = 60 * 1000;
+// How long the IndexedDB (cross-session) cache is considered fresh — after this, we ALWAYS revalidate from network
+const IDB_CACHE_TTL = 10 * 60 * 1000; // 10 minutes — admin mutations proactively warm the cache so this can be longer
 const eventDetailCache = new Map();
 const eventDetailInFlight = new Map();
 
+// Callbacks registered by UI components to be notified when fresh data arrives from the network
+const eventsUpdateCallbacks = new Set();
+
+export function registerEventsUpdateCallback(cb) {
+  eventsUpdateCallbacks.add(cb);
+}
+export function unregisterEventsUpdateCallback(cb) {
+  eventsUpdateCallbacks.delete(cb);
+}
+function notifyEventsUpdate(data) {
+  eventsUpdateCallbacks.forEach((cb) => {
+    try { cb(data); } catch (e) { console.error('eventsUpdateCallback error:', e); }
+  });
+}
+
 // On module load in browser, pre-populate in-memory cache from persistent IndexedDB
 if (typeof window !== 'undefined') {
-  idbGet('events_listing').then((cached) => {
-    if (cached && Array.isArray(cached) && cached.length > 0 && !eventsListingCache) {
-      eventsListingCache = cached;
-      eventsListingCacheTime = Date.now();
+  idbGet('events_listing_meta').then((meta) => {
+    // Only restore IDB cache if it is still within TTL
+    const cacheTime = meta?.cachedAt || 0;
+    if (Date.now() - cacheTime < IDB_CACHE_TTL) {
+      return idbGet('events_listing').then((cached) => {
+        if (cached && Array.isArray(cached) && cached.length > 0 && !eventsListingCache) {
+          eventsListingCache = cached;
+          eventsListingCacheTime = cacheTime;
+        }
+      });
     }
+    // IDB cache is stale — clear it so the next call goes straight to network
+    return idbClear().catch(() => {});
   }).catch(() => {});
 }
 
@@ -165,6 +191,28 @@ export function invalidateEventsCache() {
   idbClear().catch(() => {});
 }
 
+/**
+ * Proactively re-fetch and warm the events listing cache immediately after an admin mutation.
+ * This ensures the next user to visit the Events page loads from a warm cache (0-2s)
+ * instead of a cold Neon serverless connection (7-10s).
+ *
+ * Call this INSTEAD of invalidateEventsCache() for create/update/delete operations.
+ */
+export function warmEventsCache() {
+  // Clear in-memory + detail caches (so any force-refresh gets fresh data)
+  eventsListingCache = null;
+  eventsListingCacheTime = 0;
+  eventsListingInFlight = null;
+  eventDetailCache.clear();
+  eventDetailInFlight.clear();
+  // Do NOT wipe IDB yet — let the background fetch overwrite it with fresh data
+  // Kick off an immediate background fetch so the cache is repopulated ASAP
+  fetchAndCacheFreshEvents().catch(() => {
+    // If the background warm fails, fall back to clearing IDB so stale data isn't served indefinitely
+    idbClear().catch(() => {});
+  });
+}
+
 // Synchronous getter — returns cached events immediately (null if not cached yet)
 export function getCachedEventsListing() {
   const now = Date.now();
@@ -174,25 +222,57 @@ export function getCachedEventsListing() {
   return eventsListingCache || null;
 }
 
+// Fetch fresh events from DB, update caches, and notify UI subscribers
+async function fetchAndCacheFreshEvents() {
+  const sql = getDb();
+  const rows = await sql`
+    SELECT id, name, date, time, location, mode, type,
+           speaker, speakers, brief, report_url,
+           CASE WHEN type = 'upcoming' THEN poster_url ELSE '' END AS poster_url,
+           CASE WHEN type = 'past' THEN card_image_url ELSE '' END AS card_image_url,
+           created_at
+    FROM events 
+    ORDER BY date DESC, created_at DESC;
+  `;
+  const mapped = rows.map(mapEvent);
+  const now = Date.now();
+  eventsListingCache = mapped;
+  eventsListingCacheTime = now;
+  // Persist to IndexedDB with a timestamp so we can honour IDB_CACHE_TTL across sessions
+  idbSet('events_listing', mapped).catch(() => {});
+  idbSet('events_listing_meta', { cachedAt: now }).catch(() => {});
+  // Notify any subscribed UI components so they re-render with fresh data
+  notifyEventsUpdate(mapped);
+  return mapped;
+}
+
 // Lightweight listing — excludes heavy gallery_images and unnecessary images per type (600KB vs 3MB+)
 export async function getEventsListing(forceRefresh = false) {
   const now = Date.now();
+  // In-memory cache is fresh — return immediately, no network call needed
   if (!forceRefresh && eventsListingCache && (now - eventsListingCacheTime < EVENTS_CACHE_TTL)) {
     return eventsListingCache;
   }
 
   // Check persistent IndexedDB cache before hitting network
   if (!forceRefresh && !eventsListingCache) {
-    const fromIdb = await idbGet('events_listing');
-    if (fromIdb && Array.isArray(fromIdb) && fromIdb.length > 0) {
-      eventsListingCache = fromIdb;
-      eventsListingCacheTime = now;
-      // Revalidate in background without blocking caller
-      setTimeout(() => {
-        getEventsListing(true).catch(() => {});
-      }, 500);
-      return fromIdb;
+    const meta = await idbGet('events_listing_meta').catch(() => null);
+    const cacheTime = meta?.cachedAt || 0;
+    const idbFresh = (now - cacheTime) < IDB_CACHE_TTL;
+
+    if (idbFresh) {
+      const fromIdb = await idbGet('events_listing').catch(() => null);
+      if (fromIdb && Array.isArray(fromIdb) && fromIdb.length > 0) {
+        eventsListingCache = fromIdb;
+        eventsListingCacheTime = cacheTime;
+        // Revalidate from network immediately in background; notifyEventsUpdate() will push fresh data to UI
+        setTimeout(() => {
+          fetchAndCacheFreshEvents().catch(() => {});
+        }, 0);
+        return fromIdb;
+      }
     }
+    // IDB is stale or empty — fall through to network fetch below
   }
 
   // Deduplicate concurrent requests
@@ -200,27 +280,9 @@ export async function getEventsListing(forceRefresh = false) {
     return eventsListingInFlight;
   }
 
-  eventsListingInFlight = (async () => {
-    try {
-      const sql = getDb();
-      const rows = await sql`
-        SELECT id, name, date, time, location, mode, type,
-               speaker, speakers, brief, report_url,
-               CASE WHEN type = 'upcoming' THEN poster_url ELSE '' END AS poster_url,
-               CASE WHEN type = 'past' THEN card_image_url ELSE '' END AS card_image_url,
-               created_at
-        FROM events 
-        ORDER BY date DESC, created_at DESC;
-      `;
-      const mapped = rows.map(mapEvent);
-      eventsListingCache = mapped;
-      eventsListingCacheTime = Date.now();
-      idbSet('events_listing', mapped).catch(() => {});
-      return mapped;
-    } finally {
-      eventsListingInFlight = null;
-    }
-  })();
+  eventsListingInFlight = fetchAndCacheFreshEvents().finally(() => {
+    eventsListingInFlight = null;
+  });
 
   return eventsListingInFlight;
 }
@@ -291,7 +353,8 @@ export async function createEvent(data) {
     )
     RETURNING *;
   `;
-  invalidateEventsCache();
+  // Proactively warm cache so the next visitor loads Events instantly
+  warmEventsCache();
   notifyListeners('events');
   return mapEvent(rows[0]);
 }
@@ -320,7 +383,8 @@ export async function updateEvent(id, data) {
     WHERE id = ${id}
     RETURNING *;
   `;
-  invalidateEventsCache();
+  // Proactively warm cache so the next visitor loads Events instantly
+  warmEventsCache();
   notifyListeners('events');
   return mapEvent(rows[0]);
 }
@@ -328,7 +392,8 @@ export async function updateEvent(id, data) {
 export async function deleteEvent(id) {
   const sql = getDb();
   await sql`DELETE FROM events WHERE id = ${id}`;
-  invalidateEventsCache();
+  // Proactively warm cache so the next visitor loads Events instantly
+  warmEventsCache();
   notifyListeners('events');
 }
 

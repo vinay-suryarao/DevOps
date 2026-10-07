@@ -1,7 +1,7 @@
 /* eslint-disable no-irregular-whitespace */
 /* eslint-disable no-unused-vars */
 import { React, useState, useRef, useEffect, useMemo, useCallback } from 'react';
-import { getEventsListing, getEventById, registerForEvent, getCachedEventsListing } from '../db/neonService';
+import { getEventsListing, getEventById, registerForEvent, getCachedEventsListing, registerEventsUpdateCallback, unregisterEventsUpdateCallback } from '../db/neonService';
 // Filter icon hata diya gaya hai
 import { Calendar, Clock, MapPin, Globe, X, ArrowLeft, Download, Search, UserCheck } from 'lucide-react';
 
@@ -688,7 +688,21 @@ export default function Events() {
             }
         };
         fetchEvents();
-        return () => { isMounted = false; };
+
+        // Subscribe to background revalidation updates (stale-while-revalidate pattern).
+        // When cached (stale) data is served first and network returns fresher data,
+        // this callback fires and updates the UI automatically — no hard refresh needed.
+        const handleFreshData = (freshEvents) => {
+            if (!isMounted) return;
+            setAllEvents(freshEvents);
+            setLoading(false);
+        };
+        registerEventsUpdateCallback(handleFreshData);
+
+        return () => {
+            isMounted = false;
+            unregisterEventsUpdateCallback(handleFreshData);
+        };
     }, [prefetchEvent]);
 
     useEffect(() => {
