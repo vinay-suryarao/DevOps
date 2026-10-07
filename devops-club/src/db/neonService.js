@@ -164,22 +164,67 @@ function notifyEventsUpdate(data) {
   });
 }
 
-// On module load in browser, pre-populate in-memory cache from persistent IndexedDB
+// On module load in browser: restore IDB cache into memory AND kick off a background
+// fetch if the cache is stale or empty — so Neon wakes up immediately on app boot,
+// not only when the user navigates to the Events page.
 if (typeof window !== 'undefined') {
   idbGet('events_listing_meta').then((meta) => {
-    // Only restore IDB cache if it is still within TTL
     const cacheTime = meta?.cachedAt || 0;
-    if (Date.now() - cacheTime < IDB_CACHE_TTL) {
+    const idbFresh = Date.now() - cacheTime < IDB_CACHE_TTL;
+
+    if (idbFresh) {
+      // Restore stale-while-revalidate: populate memory from IDB immediately,
+      // then revalidate from network in the background
       return idbGet('events_listing').then((cached) => {
         if (cached && Array.isArray(cached) && cached.length > 0 && !eventsListingCache) {
           eventsListingCache = cached;
           eventsListingCacheTime = cacheTime;
         }
+        // Always revalidate in the background so data stays fresh
+        // Small delay so it doesn't compete with the page's critical-path rendering
+        setTimeout(() => {
+          if (!eventsListingInFlight) {
+            fetchAndCacheFreshEvents().catch(() => {});
+          }
+        }, 800);
       });
     }
-    // IDB cache is stale — clear it so the next call goes straight to network
-    return idbClear().catch(() => {});
-  }).catch(() => {});
+
+    // IDB is stale or missing — wake up Neon immediately in the background
+    // so the cache is ready by the time the user reaches the Events page
+    idbClear().catch(() => {});
+    setTimeout(() => {
+      if (!eventsListingInFlight) {
+        fetchAndCacheFreshEvents().catch(() => {});
+      }
+    }, 200); // very short delay so app JS finishes parsing first
+  }).catch(() => {
+    // If IDB lookup fails entirely, still try to warm the cache
+    setTimeout(() => {
+      if (!eventsListingInFlight) {
+        fetchAndCacheFreshEvents().catch(() => {});
+      }
+    }, 500);
+  });
+}
+
+/**
+ * Call this as early as possible (e.g., from main.jsx before ReactDOM.render)
+ * to start warming the Neon connection and events cache immediately on app boot.
+ * Safe to call multiple times — deduplicates automatically.
+ */
+export function prefetchEventsOnAppBoot() {
+  // The module-load block above already handles this for subsequent navigations.
+  // This function provides an explicit call site that can be moved even earlier in the boot sequence.
+  if (typeof window === 'undefined') return;
+  if (eventsListingInFlight) return; // already in-flight
+  if (eventsListingCache && (Date.now() - eventsListingCacheTime < EVENTS_CACHE_TTL)) return; // already fresh
+  // Defer 1 tick so main.jsx finishes setting up React before we hit the network
+  setTimeout(() => {
+    if (!eventsListingInFlight && !eventsListingCache) {
+      fetchAndCacheFreshEvents().catch(() => {});
+    }
+  }, 100);
 }
 
 export function invalidateEventsCache() {
