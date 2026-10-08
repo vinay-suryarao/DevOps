@@ -418,7 +418,7 @@ const About = () => {
             <h2 className="text-4xl md:text-5xl font-extrabold text-[#2a3f54] drop-shadow-lg mb-4 animate-fade-in-up" style={{ animationDelay: '0.8s' }}>Our Team</h2>
             <h3 className="text-2xl font-bold text-orange-500 mb-4 animate-fade-in-up" style={{ animationDelay: '0.9s' }}>Student Mentors</h3>
             <p className="max-w-2xl mx-auto text-slate-600 mb-12 animate-fade-in-up" style={{ animationDelay: '1s' }}>The pillars of our leadership, the Student Mentors provide strategic direction and guide the club's overall vision and activities.</p>
-            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8 max-w-7xl mx-auto mb-16">
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 lg:grid-cols-5 gap-8 max-w-7xl mx-auto mb-16">
               {mentorsData.map((member, index) => (<TeamCard key={index} name={member.name} designation={member.designation} photoUrl={member.photoUrl} animationDelay={`${1.1 + index * 0.1}s`} />))}
             </div>
             <h3 className="text-2xl font-bold text-orange-500 mb-4 animate-fade-in-up" style={{ animationDelay: '1.5s' }}>Heads</h3>
