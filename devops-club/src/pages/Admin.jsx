@@ -423,16 +423,26 @@ const EventManager = ({ onViewRegistrations }) => {
         return () => unsubscribe();
     }, []);
 
-    const openForm = (type, eventToEdit = null) => {
+    const [loadingEditId, setLoadingEditId] = useState(null);
+
+    const openForm = async (type, eventToEdit = null) => {
         setFormType(type);
-        setEditingEvent(eventToEdit);
-        setIsFormOpen(true);
         if (eventToEdit?.id) {
-            getEventById(eventToEdit.id).then((fullEvent) => {
-                if (fullEvent) {
-                    setEditingEvent(fullEvent);
-                }
-            }).catch(console.error);
+            setLoadingEditId(eventToEdit.id);
+            try {
+                // Always fetch full, fresh event from DB so images and latest description are loaded
+                const fullEvent = await getEventById(eventToEdit.id, true);
+                setEditingEvent(fullEvent || eventToEdit);
+            } catch (err) {
+                console.error("Error fetching full event:", err);
+                setEditingEvent(eventToEdit);
+            } finally {
+                setLoadingEditId(null);
+                setIsFormOpen(true);
+            }
+        } else {
+            setEditingEvent(null);
+            setIsFormOpen(true);
         }
     };
 
@@ -467,7 +477,7 @@ const EventManager = ({ onViewRegistrations }) => {
                         <PlusCircle className="w-5 h-5" /> Add Upcoming Event
                     </button>
                 </div>
-                <EventList events={upcomingEvents} onEdit={(event) => openForm('upcoming', event)} onDelete={handleDelete} onViewRegistrations={onViewRegistrations} loading={loading} />
+                <EventList events={upcomingEvents} onEdit={(event) => openForm('upcoming', event)} onDelete={handleDelete} onViewRegistrations={onViewRegistrations} loading={loading} loadingEditId={loadingEditId} />
 
                 <div className="flex justify-between items-center mt-12 mb-6">
                     <h2 className="text-2xl font-bold text-slate-800">Manage Past Events</h2>
@@ -475,13 +485,13 @@ const EventManager = ({ onViewRegistrations }) => {
                         <PlusCircle className="w-5 h-5" /> Add Past Event
                     </button>
                 </div>
-                <EventList events={pastEvents} onEdit={(event) => openForm('past', event)} onDelete={handleDelete} onViewRegistrations={onViewRegistrations} loading={loading} />
+                <EventList events={pastEvents} onEdit={(event) => openForm('past', event)} onDelete={handleDelete} onViewRegistrations={onViewRegistrations} loading={loading} loadingEditId={loadingEditId} />
             </div>
         </>
     );
 };
 
-const EventList = ({ events, onEdit, onDelete, onViewRegistrations, loading }) => {
+const EventList = ({ events, onEdit, onDelete, onViewRegistrations, loading, loadingEditId }) => {
     if (loading) return <div className="flex justify-center"><Loader className="w-8 h-8 text-indigo-600 animate-spin" /></div>;
     if (events.length === 0) return <p className="text-slate-500">No events to manage yet.</p>;
 
@@ -502,7 +512,14 @@ const EventList = ({ events, onEdit, onDelete, onViewRegistrations, loading }) =
                             <Users className="w-4 h-4" />
                             <span>Registrations</span>
                         </button>
-                        <button onClick={() => onEdit(event)} title="Edit" className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-100 rounded-full"><Pencil className="w-5 h-5" /></button>
+                        <button 
+                            onClick={() => onEdit(event)} 
+                            title="Edit" 
+                            disabled={loadingEditId === event.id}
+                            className="p-2 text-slate-500 hover:text-indigo-600 hover:bg-indigo-100 rounded-full disabled:opacity-50"
+                        >
+                            {loadingEditId === event.id ? <Loader className="w-5 h-5 animate-spin text-indigo-600" /> : <Pencil className="w-5 h-5" />}
+                        </button>
                         <button onClick={() => onDelete(event)} title="Delete" className="p-2 text-slate-500 hover:text-red-600 hover:bg-red-100 rounded-full"><Trash2 className="w-5 h-5" /></button>
                     </div>
                 </div>
@@ -748,25 +765,38 @@ const RegistrationsManager = ({ selectedEventName, onSelectEventName }) => {
 
 // --- UNIVERSAL EVENT FORM with ImgBB & UI Fix ---
 const EventForm = ({ event, type, onClose }) => {
-    const [formData, setFormData] = useState({
-        name: '', date: '', time: '', location: '', mode: 'Offline',
-        speakers: '', brief: '', reportUrl: '',
-        posterUrlFile: null, cardImageUrlFile: null, galleryImagesFiles: []
-    });
+    const [formData, setFormData] = useState(() => ({
+        name: event?.name || '',
+        date: (event?.date || '').split('T')[0],
+        time: event?.time || '',
+        location: event?.location || '',
+        mode: event?.mode || 'Offline',
+        speakers: event?.speakers || event?.speaker || '',
+        brief: event?.brief || '',
+        reportUrl: event?.reportUrl || '',
+        posterUrl: event?.posterUrl || '',
+        cardImageUrl: event?.cardImageUrl || '',
+        galleryImages: event?.galleryImages || [],
+        posterUrlFile: null,
+        cardImageUrlFile: null,
+        galleryImagesFiles: []
+    }));
+    const [posterPreview, setPosterPreview] = useState(event?.posterUrl || '');
+    const [cardPreview, setCardPreview] = useState(event?.cardImageUrl || '');
     const [submitting, setSubmitting] = useState(false);
-    
-    useEffect(() => {
-        if (event) {
-            setFormData({ ...event, posterUrlFile: null, cardImageUrlFile: null, galleryImagesFiles: [] });
-        }
-    }, [event]);
 
     const handleFileChange = (e) => {
         const { name, files } = e.target;
         if (name === 'galleryImagesFiles') {
             setFormData(prev => ({ ...prev, [name]: Array.from(files) }));
         } else {
-            setFormData(prev => ({ ...prev, [name]: files[0] }));
+            const file = files[0];
+            setFormData(prev => ({ ...prev, [name]: file }));
+            if (file) {
+                const objectUrl = URL.createObjectURL(file);
+                if (name === 'posterUrlFile') setPosterPreview(objectUrl);
+                if (name === 'cardImageUrlFile') setCardPreview(objectUrl);
+            }
         }
     };
     
@@ -781,12 +811,22 @@ const EventForm = ({ event, type, onClose }) => {
         try {
             let dataToSubmit = { ...formData, type };
 
-            if (formData.posterUrlFile) dataToSubmit.posterUrl = await uploadImageToNeon(formData.posterUrlFile);
-            if (type === 'past' && formData.cardImageUrlFile) dataToSubmit.cardImageUrl = await uploadImageToNeon(formData.cardImageUrlFile);
+            if (formData.posterUrlFile) {
+                const uploadedPoster = await uploadImageToNeon(formData.posterUrlFile);
+                if (uploadedPoster) dataToSubmit.posterUrl = uploadedPoster;
+            }
+            if (type === 'past' && formData.cardImageUrlFile) {
+                const uploadedCard = await uploadImageToNeon(formData.cardImageUrlFile);
+                if (uploadedCard) dataToSubmit.cardImageUrl = uploadedCard;
+            }
             if (type === 'past' && formData.galleryImagesFiles.length > 0) {
                 const galleryUrls = await Promise.all(formData.galleryImagesFiles.map(file => uploadImageToNeon(file)));
                 const successfulUrls = galleryUrls.filter(url => url !== null);
-                if (successfulUrls.length !== formData.galleryImagesFiles.length) { setSubmitting(false); return; }
+                if (successfulUrls.length !== formData.galleryImagesFiles.length) { 
+                    alert("Some gallery images failed to upload. Please try again.");
+                    setSubmitting(false); 
+                    return; 
+                }
                 dataToSubmit.galleryImages = [...(formData.galleryImages || event?.galleryImages || []), ...successfulUrls];
             } else if (event?.galleryImages) {
                 dataToSubmit.galleryImages = event.galleryImages;
@@ -798,13 +838,15 @@ const EventForm = ({ event, type, onClose }) => {
 
             if (event) {
                 await updateEvent(event.id, dataToSubmit);
+                alert("Event updated successfully!");
             } else {
                 await createEvent(dataToSubmit);
+                alert("Event created successfully!");
             }
             onClose();
         } catch (error) {
             console.error("Error submitting event:", error);
-            alert("An error occurred. Check console.");
+            alert("An error occurred: " + (error?.message || "Check console."));
         } finally {
             setSubmitting(false);
         }
@@ -819,8 +861,14 @@ const EventForm = ({ event, type, onClose }) => {
                     <InputField label="Event Name" name="name" value={formData.name} onChange={handleInputChange} required />
                     <InputField label="Date" name="date" type="date" value={formData.date} onChange={handleInputChange} required />
                     <InputField label="Time" name="time" value={formData.time} onChange={handleInputChange} />
-                    <FileInputField label="Event Poster" name="posterUrlFile" onChange={handleFileChange} accept="image/*" files={formData.posterUrlFile} />
-                    {event?.posterUrl && !formData.posterUrlFile && <p className="text-xs text-slate-500 mt-[-10px]">Current: <a href={event.posterUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500">View</a></p>}
+                    <FileInputField 
+                        label="Event Poster (Main Banner)" 
+                        name="posterUrlFile" 
+                        onChange={handleFileChange} 
+                        accept="image/*" 
+                        files={formData.posterUrlFile} 
+                        previewUrl={posterPreview} 
+                    />
 
                     {type === 'upcoming' && (
                         <>
@@ -838,9 +886,22 @@ const EventForm = ({ event, type, onClose }) => {
                     {type === 'past' && (
                          <>
                             <InputField label="Speaker(s)" name="speakers" value={formData.speakers} onChange={handleInputChange} placeholder="e.g., John Doe, Jane Smith"/>
-                            <TextAreaField label="Event Brief" name="brief" value={formData.brief} onChange={handleInputChange} rows={8}/>
-                            <FileInputField label="Card Image (for list view)" name="cardImageUrlFile" onChange={handleFileChange} accept="image/*" files={formData.cardImageUrlFile} />
-                            {event?.cardImageUrl && !formData.cardImageUrlFile && <p className="text-xs text-slate-500 mt-[-10px]">Current: <a href={event.cardImageUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500">View</a></p>}
+                            <TextAreaField 
+                                label="Event Brief / Description (Event Highlights)" 
+                                name="brief" 
+                                value={formData.brief || ''} 
+                                onChange={handleInputChange} 
+                                rows={8}
+                                placeholder="Enter event highlights and description..."
+                            />
+                            <FileInputField 
+                                label="Card Image (for list view thumbnail)" 
+                                name="cardImageUrlFile" 
+                                onChange={handleFileChange} 
+                                accept="image/*" 
+                                files={formData.cardImageUrlFile} 
+                                previewUrl={cardPreview} 
+                            />
                             <InputField label="Event Report URL (Google Drive Link)" name="reportUrl" type="text" value={formData.reportUrl || ''} onChange={handleInputChange} placeholder="Paste public link to the PDF here" />
                             {event?.reportUrl && <p className="text-xs text-slate-500 mt-[-10px]">Current: <a href={event.reportUrl} target="_blank" rel="noopener noreferrer" className="text-blue-500">View/Download</a></p>}
                             <FileInputField label="Gallery Images" name="galleryImagesFiles" onChange={handleFileChange} accept="image/*" multiple files={formData.galleryImagesFiles} />
@@ -872,36 +933,44 @@ const TextAreaField = (props) => (
     </div>
 );
 
-// --- UPDATED: FileInputField Component with Multiple File Selection Fix ---
-const FileInputField = (props) => {
-    const selectedFiles = props.files;
+// --- UPDATED: FileInputField Component with Preview Support ---
+const FileInputField = ({ label, name, accept, multiple, onChange, files, previewUrl }) => {
     return (
         <div>
-            <label className="block text-sm font-medium text-slate-700">{props.label}</label>
-            <div className="mt-1 flex flex-col items-center justify-center px-6 pt-5 pb-6 border-2 border-slate-300 border-dashed rounded-md">
-                <div className="space-y-1 text-center">
-                    <UploadCloud className="mx-auto h-12 w-12 text-slate-400" />
-                    <label htmlFor={props.name} className="relative cursor-pointer">
-                        <span className="font-semibold text-blue-600">Click to upload</span>
-                        <input
-                            id={props.name}
-                            type="file"
-                            name={props.name}
-                            accept={props.accept}
-                            multiple={props.multiple} // This attribute enables multiple file selection
-                            onChange={props.onChange}
-                            className="sr-only"
-                        />
-                    </label>
-                    <p className="text-xs text-slate-500">or drag and drop</p>
-                </div>
-                {selectedFiles && (
-                    <div className="mt-3 text-xs text-slate-500 font-medium">
-                        {Array.isArray(selectedFiles) && selectedFiles.length > 0 ? (
-                            <span className="bg-slate-200 px-2 py-1 rounded">{selectedFiles.length} files selected</span>
-                        ) : selectedFiles.name ? (
-                            <span className="bg-slate-200 px-2 py-1 rounded">Selected: {selectedFiles.name}</span>
-                        ) : null}
+            <label className="block text-sm font-medium text-slate-700 mb-1">{label}</label>
+            <div className="flex flex-col items-center justify-center p-4 border-2 border-slate-300 border-dashed rounded-xl bg-slate-50 hover:bg-slate-100/70 transition-colors">
+                {previewUrl ? (
+                    <div className="flex flex-col sm:flex-row items-center gap-4 w-full">
+                        <div className="relative rounded-lg overflow-hidden border border-slate-300 bg-white shadow-sm flex-shrink-0">
+                            <img src={previewUrl} alt="Preview" className="h-24 w-36 object-cover" />
+                        </div>
+                        <div className="flex-1 text-center sm:text-left space-y-2">
+                            <p className="text-xs text-slate-500">
+                                {files ? `New file chosen: ${files.name}` : 'Current image on file'}
+                            </p>
+                            <label htmlFor={name} className="inline-flex items-center gap-1.5 px-3 py-1.5 bg-blue-50 text-blue-600 rounded-lg text-xs font-semibold hover:bg-blue-100 cursor-pointer transition-colors border border-blue-200">
+                                <UploadCloud className="w-4 h-4" />
+                                <span>{files ? "Choose Another Image" : "Upload New Image"}</span>
+                                <input id={name} type="file" name={name} accept={accept} multiple={multiple} onChange={onChange} className="sr-only" />
+                            </label>
+                        </div>
+                    </div>
+                ) : (
+                    <div className="space-y-1 text-center py-2">
+                        <UploadCloud className="mx-auto h-10 w-10 text-slate-400" />
+                        <label htmlFor={name} className="relative cursor-pointer">
+                            <span className="font-semibold text-blue-600 hover:text-blue-700 text-sm">Click to upload</span>
+                            <input id={name} type="file" name={name} accept={accept} multiple={multiple} onChange={onChange} className="sr-only" />
+                        </label>
+                        <p className="text-xs text-slate-500">PNG, JPG, WebP images</p>
+                        {files && !Array.isArray(files) && (
+                            <p className="text-xs text-emerald-600 font-medium">Selected: {files.name}</p>
+                        )}
+                    </div>
+                )}
+                {multiple && files && Array.isArray(files) && files.length > 0 && (
+                    <div className="mt-2 text-xs text-slate-600 font-medium">
+                        <span className="bg-slate-200 px-2 py-1 rounded">{files.length} images selected</span>
                     </div>
                 )}
             </div>

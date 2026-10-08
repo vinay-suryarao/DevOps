@@ -389,11 +389,11 @@ const Home = () => {
   const pageWrapperRef = useRef(null);
 
   return (
-    <div ref={pageWrapperRef} className="relative font-sans">
+    <div ref={pageWrapperRef} className="relative font-sans w-full overflow-x-hidden">
       <NetworkBackground containerRef={pageWrapperRef} />
 
       {/* Hero Section */}
-      <div className="relative h-screen w-full overflow-hidden">
+      <div className="relative min-h-screen w-full overflow-hidden">
         <video
           autoPlay
           loop

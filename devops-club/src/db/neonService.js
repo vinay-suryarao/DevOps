@@ -123,13 +123,13 @@ export async function getEvents() {
   return rows.map(mapEvent);
 }
 
-// Ultra-lightweight listing for Admin dashboard — excludes ALL image columns (poster, card, gallery)
-// Reduces payload from megabytes to bytes and executes in ~15ms
+// Listing for Admin dashboard — includes poster and card images for management, excludes heavy gallery
 export async function getEventsAdminListing() {
   const sql = getDb();
   const rows = await sql`
     SELECT id, name, date, time, location, mode, type,
-           speaker, speakers, brief, report_url, created_at
+           speaker, speakers, brief, report_url, 
+           poster_url, card_image_url, created_at
     FROM events 
     ORDER BY date DESC, created_at DESC;
   `;
@@ -250,7 +250,9 @@ export function warmEventsCache() {
   eventsListingInFlight = null;
   eventDetailCache.clear();
   eventDetailInFlight.clear();
-  // Do NOT wipe IDB yet — let the background fetch overwrite it with fresh data
+  // Clear IDB listing cache so stale data isn't served across reloads
+  idbDelete('events_listing').catch(() => {});
+  idbDelete('events_listing_meta').catch(() => {});
   // Kick off an immediate background fetch so the cache is repopulated ASAP
   fetchAndCacheFreshEvents().catch(() => {
     // If the background warm fails, fall back to clearing IDB so stale data isn't served indefinitely
@@ -273,8 +275,7 @@ async function fetchAndCacheFreshEvents() {
   const rows = await sql`
     SELECT id, name, date, time, location, mode, type,
            speaker, speakers, brief, report_url,
-           CASE WHEN type = 'upcoming' THEN poster_url ELSE '' END AS poster_url,
-           CASE WHEN type = 'past' THEN card_image_url ELSE '' END AS card_image_url,
+           poster_url, card_image_url,
            created_at
     FROM events 
     ORDER BY date DESC, created_at DESC;
@@ -343,10 +344,19 @@ export async function getEventById(id, forceRefresh = false) {
     const fromIdb = await idbGet(`event_detail_${id}`);
     if (fromIdb) {
       eventDetailCache.set(id, fromIdb);
+      // Revalidate in background so it never stays stale
+      setTimeout(() => {
+        fetchFreshEventDetail(id).catch(() => {});
+      }, 0);
       return fromIdb;
     }
   }
 
+  return fetchFreshEventDetail(id);
+}
+
+async function fetchFreshEventDetail(id) {
+  if (!id) return null;
   if (eventDetailInFlight.has(id)) {
     return eventDetailInFlight.get(id);
   }
@@ -428,15 +438,25 @@ export async function updateEvent(id, data) {
     WHERE id = ${id}
     RETURNING *;
   `;
+  const updatedEvent = rows.length > 0 ? mapEvent(rows[0]) : null;
+  if (updatedEvent) {
+    eventDetailCache.set(id, updatedEvent);
+    idbSet(`event_detail_${id}`, updatedEvent).catch(() => {});
+  } else {
+    eventDetailCache.delete(id);
+    idbDelete(`event_detail_${id}`).catch(() => {});
+  }
   // Proactively warm cache so the next visitor loads Events instantly
   warmEventsCache();
   notifyListeners('events');
-  return mapEvent(rows[0]);
+  return updatedEvent;
 }
 
 export async function deleteEvent(id) {
   const sql = getDb();
   await sql`DELETE FROM events WHERE id = ${id}`;
+  eventDetailCache.delete(id);
+  idbDelete(`event_detail_${id}`).catch(() => {});
   // Proactively warm cache so the next visitor loads Events instantly
   warmEventsCache();
   notifyListeners('events');

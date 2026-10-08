@@ -696,6 +696,18 @@ export default function Events() {
             if (!isMounted) return;
             setAllEvents(freshEvents);
             setLoading(false);
+            // Invalidate local in-memory detail cache so fresh descriptions & posters are used
+            eventCache.current = {};
+            if (viewingPastEvent?.id) {
+                const matching = freshEvents.find(e => e.id === viewingPastEvent.id);
+                if (matching) {
+                    getEventById(viewingPastEvent.id, true).then((fullUpdated) => {
+                        if (isMounted && fullUpdated) {
+                            setViewingPastEvent(fullUpdated);
+                        }
+                    }).catch(() => {});
+                }
+            }
         };
         registerEventsUpdateCallback(handleFreshData);
 
@@ -703,7 +715,7 @@ export default function Events() {
             isMounted = false;
             unregisterEventsUpdateCallback(handleFreshData);
         };
-    }, [prefetchEvent]);
+    }, [prefetchEvent, viewingPastEvent?.id]);
 
     useEffect(() => {
         if (viewingPastEvent) {
@@ -731,24 +743,18 @@ export default function Events() {
     const handleCloseForm = () => { setIsFormOpen(false); setSelectedEvent(null); };
 
     const handleViewMoreClick = (event) => {
-        // INSTANT NAVIGATION (0ms delay): Never block page navigation!
-        // The listing already has name, date, time, speaker, brief, posterUrl, reportUrl
-        const cached = eventCache.current[event.id];
-        if (cached && cached.galleryImages?.length > 0) {
-            setViewingPastEvent(cached);
-            setLoadingGallery(false);
-            return;
-        }
-
-        // Show event detail immediately with what we have
+        // Show event detail immediately with listing data (which now includes posterUrl and brief)
         setViewingPastEvent(event);
         setLoadingGallery(true);
 
-        // Fetch gallery in background without blocking the UI
-        prefetchEvent(event.id).then((fullEvent) => {
+        // Fetch full event detail (with gallery images) without blocking
+        getEventById(event.id).then((fullEvent) => {
             if (fullEvent) {
+                eventCache.current[event.id] = fullEvent;
                 setViewingPastEvent(fullEvent);
             }
+            setLoadingGallery(false);
+        }).catch(() => {
             setLoadingGallery(false);
         });
     };

@@ -14,15 +14,15 @@
     }, []);
 
     return (
-      <div className="flex flex-col min-h-screen bg-white text-black">
+      <div className="flex flex-col min-h-screen bg-white text-black w-full">
         {showIntro ? (
           <Intro onComplete={handleIntroComplete} />
         ) : (
           <>
             <Navbar /> 
-            <div className="flex-grow">
+            <main className="flex-1 w-full">
               <AppRoutes /> 
-            </div>
+            </main>
             <Footer />
           </>
         )}

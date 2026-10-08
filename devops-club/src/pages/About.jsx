@@ -218,14 +218,13 @@ const ImageSlider = () => {
       {sliderImages.map((img, index) => (
         <div
           key={index}
-          className={`absolute inset-0 flex items-center justify-center p-2 transition-all duration-700 ease-in-out ${
-            index === current ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-          }`}
+          className={`absolute inset-0 flex items-center justify-center p-2 transition-all duration-700 ease-in-out ${index === current ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+            }`}
         >
-          <img 
-            src={img} 
-            alt={`Internship Certificate ${index + 1}`} 
-            className="max-w-full max-h-full object-contain drop-shadow-md rounded-sm border border-slate-200" 
+          <img
+            src={img}
+            alt={`Internship Certificate ${index + 1}`}
+            className="max-w-full max-h-full object-contain drop-shadow-md rounded-sm border border-slate-200"
           />
         </div>
       ))}
@@ -246,9 +245,8 @@ const ImageSlider = () => {
           <button
             key={i}
             onClick={() => setCurrent(i)}
-            className={`w-2 h-2 rounded-full transition-all ${
-              i === current ? 'bg-orange-500 scale-125' : 'bg-white/60 hover:bg-white'
-            }`}
+            className={`w-2 h-2 rounded-full transition-all ${i === current ? 'bg-orange-500 scale-125' : 'bg-white/60 hover:bg-white'
+              }`}
           />
         ))}
       </div>
